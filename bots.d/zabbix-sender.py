@@ -1,10 +1,14 @@
 from pyzabbix import ZabbixMetric, ZabbixSender
 
 
-def on_message(msg):
-    import pudb
-    pudb.set_trace()
+def on_message(client, userdata, msg):
+    hostname = msg.topic.split("/")[0]
+    key = '.'.join(msg.topic.split("/")[1:])
+    value = msg.payload or ''
+    if isinstance(value, bytes):
+        value = value.decode('utf-8')
     packet = [
-        ZabbixMetric(hostname, key, 2),
+        ZabbixMetric(hostname, key, value),
     ]
     result = ZabbixSender(use_config=True).send(packet)
+    client.logger.info(result)

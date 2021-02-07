@@ -31,33 +31,6 @@ with ZabbixAPI(url=url, user=user, password=password) as zapi:
     print(res)
     print("-----------------")
 
-    res = zapi.do_request('host.create', {
-        'host': hostname,
-        # requires a host interface for items later
-        "interfaces": [
-            {
-                "type": 1,
-                "main": 1,
-                "useip": 1,
-                "ip": "127.0.0.1",
-                "dns": "",
-                "port": "10050"
-            }
-        ],
-        "groups": [
-            {
-                "groupid": "4"
-            }
-        ],
-        "tags": [
-            {
-                "tag": "Host name",
-                "value": "Linux server"
-            }
-        ],
-        "inventory_mode": 0,
-    })
-    host_id = res['result']['hostids'][0]
 
     test = zapi.host.get(host_id)
     interfaces = zapi.do_request('hostinterface.get', {
@@ -65,15 +38,5 @@ with ZabbixAPI(url=url, user=user, password=password) as zapi:
     })
     interfaceid = interfaces['result'][0]['interfaceid']
 
-    res = zapi.do_request('item.create', {
-        "name": "Free disk space on /home/joe/",
-        "key_": "mykey1",
-        "hostid": host_id,
-        "type": 0,
-        "value_type": 3,
-        "interfaceid": interfaceid,
-        "delay": "1s"
-    })
-    item_id = res['result']['itemids'][0]
 
 print(hostname)

@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+import uuid
+import atexit
+import signal
+import time
 import paho.mqtt.client as mqtt
 import argparse
 import sys
@@ -6,27 +10,54 @@ from pathlib import Path
 from importlib import import_module
 import os
 import croniter
+import importlib.util
+import subprocess
+import logging
+import json
+from collections import namedtuple
+config = json.loads(Path("/etc/sre/autobot.conf").read_text())
+
+
+FORMAT = '[%(levelname)s] %(name) -12s %(asctime)s %(message)s'
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger('')  # root handler
 
 
 parser = argparse.ArgumentParser(description='Bot SRE')
-parser.add_argument('-H', metavar="Host", type=str, help='mosquitto host', required=True, default='mqtt.eclipse.org')
-parser.add_argument('-p', metavar="Port", type=int, default=1833)
-parser.add_argument('-n', metavar="Name", type=str, required=True)
+parser.add_argument('-s', metavar="Script", type=str, required=False)
+parser.add_argument('-l', metavar="Level", type=str, required=False, default='INFO')
 args = parser.parse_args()
 
-# simple eval of
-name = args.n
-server = args.H
-port = args.p
+name = config['name']
 
-bots_path = Path(os.getcwd())
-import pudb
-pudb.set_trace()
+logging.getLogger().setLevel(args.l.upper())
+
+bots_path = Path(os.getcwd()) / 'bots.d'
+sys.path.append(bots_path)
+
+processes = []
+
+def start_main():
+    for script in bots_path.glob("*.py"):
+        if script.name.startswith("__"):
+            continue
+        process = subprocess.Popen([
+            '/usr/bin/python3',
+            'autobot.py',
+            '-s', script,
+            '-l', args.l,
+        ])
+        processes.append(process)
+
+    while True:
+        time.sleep(10)
+
 
 class mqttwrapper(object):
     def __init__(self, client, hostname):
         self.client = client
         self.hostname = hostname
+        self.logger = logger
 
     def publish(self, path, payload=None, qos=0, retain=False):
         path = self.hostname + '/' + path
@@ -37,39 +68,74 @@ class mqttwrapper(object):
             retain=retain
         )
 
-# The callback for when the client receives a CONNACK response from the server.
-def on_connect(client, userdata, flags, rc):
-    pass
-    #print("Connected with result code " + str(rc))
+def on_connect(client, userdata, flags, reason, properties):
+    logger.debug(f"Client connected {args.s}")
+    client.subscribe("#")
 
-    client.subscribe("$SYS/#")
+def iterate_modules():
+    file = Path(args.s)
+    module = load_module(file)
+    yield module
 
-    client.publish('test', payload=None, qos=0, retain=False)
+def load_module(path):
+    mod_name = path.name.rsplit(".", 1)[0]
+    spec = importlib.util.spec_from_file_location(mod_name, path)
+    foo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(foo)
+    return foo
 
 
-# The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    pass
-    print(msg.topic + " " + str(msg.payload))
+    logger.debug(f"on_message:{args.s}: {msg.topic} {str(msg.payload)}")
+    client2 = mqttwrapper(client, name)
+    for module in iterate_modules():
+        if getattr(module, 'on_message', None):
+            try:
+                module.on_message(client2, userdata, msg)
+            except Exception as ex:
+                logger.error(ex)
 
-    for file in bots_path.glob("bots.d/*"):
-        p, m = name.rsplit('.', 1)
-        mod = import_module(p)
-        met = getattr(mod, m)
+
+def start_broker():
+    logger.info(f"Starting script at {args.s}")
+
+    client = mqtt.Client(protocol=mqtt.MQTTv5)
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    logger.info(f"Connecting to {config['broker']}")
+    client.connect(config['broker']['ip'], config['broker'].get('port', 1883), 60)
+
+    while True:
+        client2 = mqttwrapper(client, name)
+        for module in iterate_modules():
+            if getattr(module, 'run', None):
+                try:
+                    module.run(client2)
+                except Exception as ex:
+                    logger.error(ex)
+                    time.sleep(1)
+        client.loop_start()
+        time.sleep(0.1)
 
 
-client = mqtt.Client()
-client.on_connect = on_connect
-client.on_message = on_message
+def cleanup():
+    timeout_sec = 2
+    for p in processes: # list of your processes
+        p_sec = 0
+        for second in range(timeout_sec):
+            if p.poll() is None:
+                time.sleep(0.1)
+                p_sec += 1
+        if p_sec >= timeout_sec:
+            p.kill() # supported from python 2.6
 
-client.connect(server, port, 60)
 
-import pudb
-pudb.set_trace()
-while True:
-    client2 = mqttwrapper(client, args.n)
-    for file in bots_path.glob("bots.d/*"):
-        p, m = name.rsplit('.', 1)
-        mod = import_module(p)
-        met = getattr(mod, m)
-    client.loop()
+if __name__ == '__main__':
+    atexit.register(cleanup)
+
+    if not args.s:
+        start_main()
+    else:
+        script = Path(args.s)
+        start_broker()
