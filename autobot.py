@@ -20,7 +20,8 @@ import hashlib
 from datetime import datetime
 import threading
 
-config = json.loads(Path("/etc/sre/autobot.conf").read_text())
+config_file = Path("/etc/sre/autobot.conf")
+config = json.loads(config_file.read_text())
 
 
 FORMAT = '[%(levelname)s] %(name) -12s %(asctime)s %(message)s'
@@ -49,7 +50,8 @@ default_bots_path = Path('/etc/sre/bots.d')
 
 processes = []
 
-if args.new:
+def make_new_file():
+
     new_name = args.new
     for c in " ":
         new_name = new_name.replace(c, "_")
@@ -60,9 +62,21 @@ if args.new:
     template = (current_dir / 'install' / 'bot.template.py').read_text()
     dest_path.write_text(template)
 
-
-if args.install:
+def make_install():
     name = 'autobot.service'
+
+    if not config_file.exists():
+        conf = json.loads((current_dir / 'install' / 'autobot.conf').read_text())
+        conf['name'] = args.name
+        conf.setdefault('bots-paths', [])
+        config_file.mkdir(parents=True, exist_ok=True)
+        config_file.write_text(json.dumps(conf, indent=4))
+
+    for script_path in iterate_scripts():
+        mod = load_module(script_path)
+        if getattr(mod, 'install', None):
+            mod.install(config_file.parent)
+
     template = (current_dir / 'install' / name).read_text()
     template = template.replace('__path__', str(Path(os.getcwd()) / 'autobot.py'))
     (Path("/etc/systemd/system/") / name).write_text(template)
@@ -249,6 +263,14 @@ def cleanup():
 
 
 if __name__ == '__main__':
+    if args.new:
+        make_new_file()
+        sys.exit(0)
+
+    if args.install:
+        make_install()
+        sys.exit(0)
+
     atexit.register(cleanup)
 
     if not args.s:
