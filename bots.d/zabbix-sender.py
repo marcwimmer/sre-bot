@@ -10,5 +10,6 @@ def on_message(client, userdata, msg):
     packet = [
         ZabbixMetric(hostname, key, value),
     ]
+    print(f"zb send now {packet}")
     result = ZabbixSender(use_config=True).send(packet)
-    client.logger.info(result)
+    client.logger.debug(result)

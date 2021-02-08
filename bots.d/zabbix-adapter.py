@@ -77,6 +77,7 @@ def _create_item(zapi, hostid, item_key, name, ttype):
 def on_message(client, userdata, msg):
     hostname = msg.topic.split("/")[0]
     key = '.'.join(msg.topic.split("/")[1:])
+    print(msg.topic)
 
     with ZabbixAPI(url=config['url'], user=config['user'], password=config['password']) as zapi:
         hosts = _get_hosts(zapi, hostname)

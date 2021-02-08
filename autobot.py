@@ -88,7 +88,8 @@ def start_proc(path):
         '-s', path,
         '-l', args.l,
     ])
-    processes.append(PROC(process=process, path=path, md5=_get_md5(path)))
+    md5 = _get_md5(path)
+    processes.append(PROC(process=process, path=path, md5=md5))
 
 def iterate_scripts():
     for bots_path in bots_paths:
@@ -98,14 +99,10 @@ def iterate_scripts():
             yield script
 
 def start_main():
-    kill_all_processes()
-    for script in iterate_scripts():
-        start_proc(script)
-
     while True:
         for proc in processes:
             if _get_md5(proc.path) != proc.md5:
-                kill_proc(proc)
+                kill_proc(proc, 1)
                 start_proc(proc.path)
 
         for script in iterate_scripts():
@@ -114,7 +111,7 @@ def start_main():
 
         for proc in processes:
             if not [x for x in list(iterate_scripts()) if x == proc.path]:
-                kill_proc(proc)
+                kill_proc(proc, 1)
 
         time.sleep(1)
 
@@ -161,10 +158,13 @@ def on_message(client, userdata, msg):
             except Exception as ex:
                 logger.error(ex)
 
-def run_iter(client, iter, module):
+def run_iter(client, scheduler, module):
+    base = datetime.now()
+    iter = croniter.croniter(scheduler, base)
     while True:
         try:
             next = iter.get_next(datetime)
+            logger.debug(f"Executing {module} next at {next.strftime('%Y-%m-%d %H:%M:%S')}")
 
             while True:
                 if datetime.now() > next:
@@ -181,6 +181,9 @@ def run_iter(client, iter, module):
                     break
                 time.sleep(0.5)
 
+            while next < datetime.now():
+                next = iter.get_next(datetime)
+
         except Exception as ex:
             logger.error(ex)
             time.sleep(1)
@@ -188,7 +191,7 @@ def run_iter(client, iter, module):
 def start_broker():
     logger.info(f"Starting script at {args.s}")
 
-    client = mqtt.Client(protocol=mqtt.MQTTv5)
+    client = mqtt.Client(client_id=f"autobot-{str(uuid.uuid4())})", protocol=mqtt.MQTTv5)
     client.on_connect = on_connect
     client.on_message = on_message
 
@@ -197,11 +200,9 @@ def start_broker():
 
     module = list(iterate_modules())[0]
 
-    base = datetime.now()
     if getattr(module, 'SCHEDULERS', None):
         for scheduler in module.SCHEDULERS:
-            iter = croniter.croniter(scheduler, base)
-            t = threading.Thread(target=run_iter, args=(client, iter, module))
+            t = threading.Thread(target=run_iter, args=(client, scheduler, module))
             t.daemon = False
             t.start()
 
@@ -216,13 +217,12 @@ def kill_proc(proc, timeout):
             p_sec += 1
     if p_sec >= timeout:
         proc.process.kill() # supported from python 2.6
+    processes.pop(processes.index(proc))
 
 def kill_all_processes():
-    timeout_sec = 2
+    timeout_sec = 1
     for p in processes:
         kill_proc(p, timeout_sec)
-    while processes:
-        processes.pop(0)
 
 def cleanup():
     kill_all_processes()
