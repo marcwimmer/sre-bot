@@ -191,7 +191,7 @@ def run_iter(client, scheduler, module):
 def start_broker():
     logger.info(f"Starting script at {args.s}")
 
-    client = mqtt.Client(client_id=f"autobot-{str(uuid.uuid4())})", protocol=mqtt.MQTTv5)
+    client = mqtt.Client(client_id=f"autobot-{name}-{args.s})", protocol=mqtt.MQTTv5)
     client.on_connect = on_connect
     client.on_message = on_message
 
