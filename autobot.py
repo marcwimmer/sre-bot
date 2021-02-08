@@ -14,43 +14,109 @@ import importlib.util
 import subprocess
 import logging
 import json
+import textwrap
 from collections import namedtuple
+import hashlib
+from datetime import datetime
+import threading
+
 config = json.loads(Path("/etc/sre/autobot.conf").read_text())
 
 
 FORMAT = '[%(levelname)s] %(name) -12s %(asctime)s %(message)s'
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger('')  # root handler
+current_dir = Path(sys.path[0])
 
+PROC = namedtuple("Process", field_names=("process", "path", "md5"))
 
-parser = argparse.ArgumentParser(description='Bot SRE')
+parser = argparse.ArgumentParser(description='Bot SRE', epilog="""
+
+Easily runs observing scripts and publishes to mqtt. Receiving also possible.
+
+""")
 parser.add_argument('-s', metavar="Script", type=str, required=False)
 parser.add_argument('-l', metavar="Level", type=str, required=False, default='INFO')
+parser.add_argument('-i', '--install', required=False, action='store_true')
+parser.add_argument('-n', '--new', required=False)
 args = parser.parse_args()
 
 name = config['name']
 
 logging.getLogger().setLevel(args.l.upper())
 
-bots_path = Path(os.getcwd()) / 'bots.d'
-sys.path.append(bots_path)
+bots_paths = [
+    Path(sys.path[0]) / 'bots.d',
+    Path('/etc/sre/bots.d'),
+]
+sys.path += bots_paths
 
 processes = []
 
+if args.new:
+    new_name = args.new
+    for c in " ":
+        new_name = new_name.replace(c, "_")
+    dest_path = bots_paths[1] / (new_name + ".py")
+    if dest_path.exists():
+        print(f"Already exists: {dest_path}")
+        sys.exit(-1)
+    template = (current_dir / 'install' / 'bot.template.py').read_text()
+    dest_path.write_text(template)
+
+
+if args.install:
+    name = 'autobot.service'
+    template = (current_dir / 'install' / name).read_text()
+    template = template.replace('__path__', str(Path(os.getcwd()) / 'autobot.py'))
+    (Path("/etc/systemd/system/") / name).write_text(template)
+    subprocess.check_call(["/usr/bin/systemctl", "enable", name])
+    print(f'systemctl start {name}')
+    sys.exit(0)
+
+def _get_md5(filepath):
+    if not filepath.exists():
+        return ''
+    m = hashlib.md5()
+    m.update(filepath.read_bytes())
+    return m.hexdigest()
+
+def start_proc(path):
+    process = subprocess.Popen([
+        '/usr/bin/python3',
+        'autobot.py',
+        '-s', path,
+        '-l', args.l,
+    ])
+    processes.append(PROC(process=process, path=path, md5=_get_md5(path)))
+
+def iterate_scripts():
+    for bots_path in bots_paths:
+        for script in bots_path.glob("*.py"):
+            if script.name.startswith("__"):
+                continue
+            yield script
+
 def start_main():
-    for script in bots_path.glob("*.py"):
-        if script.name.startswith("__"):
-            continue
-        process = subprocess.Popen([
-            '/usr/bin/python3',
-            'autobot.py',
-            '-s', script,
-            '-l', args.l,
-        ])
-        processes.append(process)
+    kill_all_processes()
+    for script in iterate_scripts():
+        start_proc(script)
 
     while True:
-        time.sleep(10)
+        for proc in processes:
+            if _get_md5(proc.path) != proc.md5:
+                kill_proc(proc)
+                start_proc(proc.path)
+
+        for script in iterate_scripts():
+            if not [x for x in processes if x.path == script]:
+                start_proc(script)
+
+        for proc in processes:
+            if not [x for x in list(iterate_scripts()) if x == proc.path]:
+                kill_proc(proc)
+
+        time.sleep(1)
 
 
 class mqttwrapper(object):
@@ -95,6 +161,29 @@ def on_message(client, userdata, msg):
             except Exception as ex:
                 logger.error(ex)
 
+def run_iter(client, iter, module):
+    while True:
+        try:
+            next = iter.get_next(datetime)
+
+            while True:
+                if datetime.now() > next:
+                    client2 = mqttwrapper(client, name)
+                    if getattr(module, 'run', None):
+                        try:
+                            module.run(client2)
+                            client2.publish(Path(args.s).name + '/rc', payload=0)
+                        except Exception as ex:
+                            client2.publish(Path(args.s).name + '/rc', payload=1)
+                            client2.publish(Path(args.s).name + '/last_error', payload=str(ex))
+                            logger.error(ex)
+                            time.sleep(1)
+                    break
+                time.sleep(0.5)
+
+        except Exception as ex:
+            logger.error(ex)
+            time.sleep(1)
 
 def start_broker():
     logger.info(f"Starting script at {args.s}")
@@ -106,29 +195,37 @@ def start_broker():
     logger.info(f"Connecting to {config['broker']}")
     client.connect(config['broker']['ip'], config['broker'].get('port', 1883), 60)
 
-    while True:
-        client2 = mqttwrapper(client, name)
-        for module in iterate_modules():
-            if getattr(module, 'run', None):
-                try:
-                    module.run(client2)
-                except Exception as ex:
-                    logger.error(ex)
-                    time.sleep(1)
-        client.loop_start()
-        time.sleep(0.1)
+    module = list(iterate_modules())[0]
 
+    base = datetime.now()
+    if getattr(module, 'SCHEDULERS', None):
+        for scheduler in module.SCHEDULERS:
+            iter = croniter.croniter(scheduler, base)
+            t = threading.Thread(target=run_iter, args=(client, iter, module))
+            t.daemon = False
+            t.start()
+
+    client.loop_forever()
+
+
+def kill_proc(proc, timeout):
+    p_sec = 0
+    for second in range(timeout):
+        if proc.process.poll() is None:
+            time.sleep(0.1)
+            p_sec += 1
+    if p_sec >= timeout:
+        proc.process.kill() # supported from python 2.6
+
+def kill_all_processes():
+    timeout_sec = 2
+    for p in processes:
+        kill_proc(p, timeout_sec)
+    while processes:
+        processes.pop(0)
 
 def cleanup():
-    timeout_sec = 2
-    for p in processes: # list of your processes
-        p_sec = 0
-        for second in range(timeout_sec):
-            if p.poll() is None:
-                time.sleep(0.1)
-                p_sec += 1
-        if p_sec >= timeout_sec:
-            p.kill() # supported from python 2.6
+    kill_all_processes()
 
 
 if __name__ == '__main__':

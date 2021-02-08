@@ -1,3 +1,4 @@
+SCHEDULERS = ["* * * * * */1"]
 import time
 
 def how_often():

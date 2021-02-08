@@ -1,0 +1,11 @@
+[Unit]
+Description=SRE Autobot
+ 
+[Service]
+ExecStart=__path__
+ 
+[Install]
+WantedBy=multi-user.target
+ 
+ 
+ 
