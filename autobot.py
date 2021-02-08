@@ -39,17 +39,13 @@ parser.add_argument('-s', metavar="Script", type=str, required=False)
 parser.add_argument('-l', metavar="Level", type=str, required=False, default='INFO')
 parser.add_argument('-i', '--install', required=False, action='store_true')
 parser.add_argument('-n', '--new', required=False)
+parser.add_argument('-ir', '--install-requirements', required=False)
 args = parser.parse_args()
 
 name = config['name']
 
 logging.getLogger().setLevel(args.l.upper())
-
-bots_paths = [
-    Path(sys.path[0]) / 'bots.d',
-    Path('/etc/sre/bots.d'),
-]
-sys.path += bots_paths
+default_bots_path = Path('/etc/sre/bots.d')
 
 processes = []
 
@@ -57,7 +53,7 @@ if args.new:
     new_name = args.new
     for c in " ":
         new_name = new_name.replace(c, "_")
-    dest_path = bots_paths[1] / (new_name + ".py")
+    dest_path = default_bots_path / (new_name + ".py")
     if dest_path.exists():
         print(f"Already exists: {dest_path}")
         sys.exit(-1)
@@ -71,7 +67,12 @@ if args.install:
     template = template.replace('__path__', str(Path(os.getcwd()) / 'autobot.py'))
     (Path("/etc/systemd/system/") / name).write_text(template)
     subprocess.check_call(["/usr/bin/systemctl", "enable", name])
+    print("")
+    print("Start the autobot with:")
     print(f'systemctl start {name}')
+    print("")
+    print(f"Add custom bots in {default_bots_path} using autobot.py --new ....")
+    print(f"Clone existing bots to {default_bots_path}")
     sys.exit(0)
 
 def _get_md5(filepath):
@@ -91,8 +92,30 @@ def start_proc(path):
     md5 = _get_md5(path)
     processes.append(PROC(process=process, path=path, md5=md5))
 
+def _get_bots_paths():
+    bots_paths = [
+        default_bots_path,
+    ]
+
+    for path in [
+        default_bots_path,
+    ] + config.get('bots-paths', ''):
+        if not path: continue
+        path = Path(path)
+        for path in path.glob("**/*.py"):
+            if '.git' in path.parts:
+                continue
+            if path.name.startswith("__"): continue
+            if path.name.endswith(".py"):
+                bots_paths.append(path.parent)
+
+    for path in bots_paths:
+        if path not in sys.path:
+            sys.path += [path]
+    return bots_paths
+
 def iterate_scripts():
-    for bots_path in bots_paths:
+    for bots_path in _get_bots_paths():
         for script in bots_path.glob("*.py"):
             if script.name.startswith("__"):
                 continue
@@ -180,9 +203,6 @@ def run_iter(client, scheduler, module):
                             time.sleep(1)
                     break
                 time.sleep(0.5)
-
-            while next < datetime.now():
-                next = iter.get_next(datetime)
 
         except Exception as ex:
             logger.error(ex)
