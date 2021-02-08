@@ -67,7 +67,6 @@ def make_install():
 
     if not config_file.exists():
         conf = json.loads((current_dir / 'install' / 'autobot.conf').read_text())
-        conf['name'] = args.name
         conf.setdefault('bots-paths', [])
         config_file.mkdir(parents=True, exist_ok=True)
         config_file.write_text(json.dumps(conf, indent=4))
