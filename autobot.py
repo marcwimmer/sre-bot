@@ -43,7 +43,6 @@ parser.add_argument('-n', '--new', required=False)
 parser.add_argument('-ir', '--install-requirements', required=False)
 args = parser.parse_args()
 
-name = config['name']
 
 logging.getLogger().setLevel(args.l.upper())
 default_bots_path = Path('/etc/sre/bots.d')
@@ -270,6 +269,7 @@ if __name__ == '__main__':
         make_install()
         sys.exit(0)
 
+    name = config['name']
     atexit.register(cleanup)
 
     if not args.s:
