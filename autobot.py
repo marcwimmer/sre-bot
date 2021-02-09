@@ -95,6 +95,7 @@ def _get_md5(filepath):
     return m.hexdigest()
 
 def start_proc(path):
+    logger.info(f"Starting {path}...")
     process = subprocess.Popen([
         '/usr/bin/python3',
         'autobot.py',
@@ -137,15 +138,18 @@ def start_main():
     while True:
         for proc in processes:
             if _get_md5(proc.path) != proc.md5:
+                logger.info(f"Script was changed, restarting: {proc.path}")
                 kill_proc(proc, 1)
                 start_proc(proc.path)
 
         for script in iterate_scripts():
             if not [x for x in processes if x.path == script]:
+                logger.info(f"Detected new script: {script}")
                 start_proc(script)
 
         for proc in processes:
             if not [x for x in list(iterate_scripts()) if x == proc.path]:
+                logger.info(f"Detected removal of script: {script}")
                 kill_proc(proc, 1)
 
         time.sleep(1)
