@@ -210,6 +210,7 @@ def run_iter(client, scheduler, module):
                     client2 = mqttwrapper(client, name)
                     if getattr(module, 'run', None):
                         try:
+                            logger.debug(f"Running {args.s}:run")
                             module.run(client2)
                             client2.publish(Path(args.s).name + '/rc', payload=0)
                         except Exception as ex:
