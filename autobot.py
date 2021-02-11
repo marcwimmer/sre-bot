@@ -77,7 +77,7 @@ def make_install():
 """.format(current_dir))
     os.chmod(bin_autobot, os.stat(bin_autobot).st_mode | stat.S_IEXEC)
     print(f"autobot is now in path, you can call him from anywhere.")
-
+    import pudb;pudb.set_trace()
     if not config_file.exists():
         conf = json.loads((current_dir / 'install' / 'autobot.conf').read_text())
         conf.setdefault('bots-paths', [])
