@@ -54,6 +54,8 @@ parser.add_argument('-n', '--new', required=False)
 parser.add_argument('-ir', '--install-requirements', required=False)
 parser.add_argument('-t', '--testbot', required=False)
 parser.add_argument('--list-bots', action="store_true")
+parser.add_argument('--pull-bots', action="store_true")
+
 args = parser.parse_args()
 
 
@@ -321,6 +323,12 @@ def test_bot(name):
     mod = load_module(filtered[0])
     mod.run(PseudoClient())
 
+def pull_bots():
+    for script in iterate_scripts():
+        git_dir = script.parent / '.git'
+        if git_dir.exists():
+            print(f"Executing git pull in {git_dir.parent}")
+            subprocess.call(['git', 'pull'])
 
 if __name__ == '__main__':
     if args.new:
@@ -338,6 +346,10 @@ if __name__ == '__main__':
     if args.list_bots:
         for script in iterate_scripts():
             print(script)
+        sys.exit(0)
+
+    if args.pull_bots:
+        pull_bots()
         sys.exit(0)
         
     name = config['name']
