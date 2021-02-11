@@ -318,7 +318,10 @@ if __name__ == '__main__':
     atexit.register(cleanup)
 
     if not args.s:
-        start_main()
+        if args.daemon:
+            start_main()
+        else:
+            print("Please call with --daemon.")
     else:
         script = Path(args.s)
         start_broker()
