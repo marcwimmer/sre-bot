@@ -274,7 +274,8 @@ class PseudoClient(object):
         print(f"{path}:{qos}: {payload}")
 
 def test_bot(name):
-    for mod in iterate_scripts():
+    scripts = list(set(map(lambda x: x.name, iterate_scripts())))
+    for mod in :
         print(mod.name)
     filtered = list(filter(lambda x: args.testbot in mod.name, iterate_scripts()))
     if len(filtered) != 1:
