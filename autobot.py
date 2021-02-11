@@ -289,13 +289,11 @@ def test_bot(name):
         print(mod.name)
     filtered = list(filter(lambda x: args.testbot in mod.name, iterate_scripts()))
     if len(filtered) != 1:
-        echo(f"No bot found for {args.testbot}.")
+        print(f"No bot found for {args.testbot}.")
         return
-
-
-    if Path(mod.__file__) == args.testbot:
-        pudb.set_trace()
-        mod.run(PseudoClient())
+    mod = load_module(filtered([0]))
+    pudb.set_trace()
+    mod.run(PseudoClient())
 
 
 if __name__ == '__main__':
