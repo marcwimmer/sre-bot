@@ -38,6 +38,7 @@ parser = argparse.ArgumentParser(description='Bot SRE', epilog="""
 Easily runs observing scripts and publishes to mqtt. Receiving also possible.
 
 """)
+parser.add_argument('-d', '--daemon', metavar="Daemon", action="store_true")
 parser.add_argument('-s', metavar="Script", type=str, required=False)
 parser.add_argument('-l', metavar="Level", type=str, required=False, default='INFO')
 parser.add_argument('-i', '--install', required=False, action='store_true')
