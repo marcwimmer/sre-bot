@@ -86,6 +86,7 @@ def make_install():
         if getattr(mod, 'install', None):
             mod.install(config_file.parent)
 
+    subprocess.call(["/bin/systemctl", "stop", name])
     template = (current_dir / 'install' / name).read_text()
     template = template.replace('__path__', str(current_dir / 'autobot.py'))
     (Path("/etc/systemd/system/") / name).write_text(template)
