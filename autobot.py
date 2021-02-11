@@ -72,7 +72,7 @@ def make_install():
 {}/autobot.py "$@"
 """.format(current_dir))
     st = os.stat(bin_autobot)
-    os.chmod(bin_autobot, st.st_mode | stat.S_IEXEC)
+    os.chmod(bin_autobot, os.stat(bin_autobot).st_mode | stat.S_IEXEC)
 
 
     if not config_file.exists():
