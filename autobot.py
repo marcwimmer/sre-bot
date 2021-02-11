@@ -91,6 +91,7 @@ def make_install():
     (Path("/etc/systemd/system/") / name).write_text(template)
     subprocess.check_call(["/bin/systemctl", "daemon-reload"])
     subprocess.check_call(["/bin/systemctl", "enable", name])
+    subprocess.check_call(["/bin/systemctl", "restart", name])
     print("")
     print("Start the autobot with:")
     print(f'systemctl start {name}')
