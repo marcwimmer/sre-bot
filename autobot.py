@@ -286,8 +286,13 @@ def test_bot(name):
         # module = answer['module']
     # else:
     for mod in iterate_scripts():
-        print(mod)
-        modules.add(mod)
+        print(mod.name)
+    filtered = list(filter(lambda x: args.testbot in mod.name, iterate_scripts()))
+    if len(filtered) != 1:
+        echo(f"No bot found for {args.testbot}.")
+        return
+
+
     if Path(mod.__file__) == args.testbot:
         pudb.set_trace()
         mod.run(PseudoClient())
