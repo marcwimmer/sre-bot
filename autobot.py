@@ -276,20 +276,21 @@ class PseudoClient(object):
 def test_bot(name):
     import pudb
     pudb.set_trace()
-    if not name:
-        list = modules
-        for mod in iterate_modules:
-            modules.add(mod)
-        answer = inquirer.prompt([inquirer.List('module', 'Please choose a module', choices=modules)])
-        if not answer['module']:
-            return
-        module = answer['module']
-    else:
-        for mod in iterate_modules:
-            modules.add(mod)
-        if Path(mod.__file__) == args.testbot:
-            pudb.set_trace()
-            mod.run(PseudoClient())
+    # if not name:
+        # list = modules
+        # for mod in iterate_modules:
+            # modules.add(mod)
+        # answer = inquirer.prompt([inquirer.List('module', 'Please choose a module', choices=modules)])
+        # if not answer['module']:
+            # return
+        # module = answer['module']
+    # else:
+    for mod in iterate_modules:
+        print(mod)
+        modules.add(mod)
+    if Path(mod.__file__) == args.testbot:
+        pudb.set_trace()
+        mod.run(PseudoClient())
 
 
 if __name__ == '__main__':
