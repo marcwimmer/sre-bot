@@ -66,6 +66,11 @@ def make_new_file():
 def make_install():
     name = 'autobot.service'
 
+    bin_autobot = Path('/usr/local/bin/autobot')
+    bin_autobot.write_text("""#!/bin/bash
+{}/autobot.py "$@"
+""".format(current_dir))
+
     if not config_file.exists():
         conf = json.loads((current_dir / 'install' / 'autobot.conf').read_text())
         conf.setdefault('bots-paths', [])
