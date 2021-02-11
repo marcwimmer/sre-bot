@@ -83,7 +83,7 @@ def make_install():
         config.setdefault('bots-paths', [])
         config.setdefault('name', socket.gethostname())
         config_file.parent.mkdir(parents=True, exist_ok=True)
-        config_file.write_text(json.dumps(conf, indent=4))
+        config_file.write_text(json.dumps(config, indent=4))
         
 
     for script_path in iterate_scripts():
