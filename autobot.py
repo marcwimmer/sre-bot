@@ -274,17 +274,6 @@ class PseudoClient(object):
         print(f"{path}:{qos}: {payload}")
 
 def test_bot(name):
-    import pudb
-    pudb.set_trace()
-    # if not name:
-        # list = modules
-        # for mod in iterate_modules:
-            # modules.add(mod)
-        # answer = inquirer.prompt([inquirer.List('module', 'Please choose a module', choices=modules)])
-        # if not answer['module']:
-            # return
-        # module = answer['module']
-    # else:
     for mod in iterate_scripts():
         print(mod.name)
     filtered = list(filter(lambda x: args.testbot in mod.name, iterate_scripts()))
