@@ -89,6 +89,7 @@ def make_install():
     template = (current_dir / 'install' / name).read_text()
     template = template.replace('__path__', str(current_dir / 'autobot.py'))
     (Path("/etc/systemd/system/") / name).write_text(template)
+    subprocess.check_call(["/bin/systemctl", "daemon-reload", name])
     subprocess.check_call(["/bin/systemctl", "enable", name])
     print("")
     print("Start the autobot with:")
