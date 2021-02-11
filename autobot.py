@@ -72,6 +72,7 @@ def make_install():
 {}/autobot.py "$@"
 """.format(current_dir))
     os.chmod(bin_autobot, os.stat(bin_autobot).st_mode | stat.S_IEXEC)
+    print(f"autobot is now in path, you can call him from anywhere.")
 
     if not config_file.exists():
         conf = json.loads((current_dir / 'install' / 'autobot.conf').read_text())
