@@ -128,7 +128,7 @@ def _get_bots_paths():
 
     for path in [
         default_bots_path,
-    ] + config.get('bots-paths', ''):
+    ] + config.get('bots-paths', []):
         if not path: continue
         path = Path(path)
         for path in path.glob("**/*.py"):
