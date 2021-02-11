@@ -284,9 +284,10 @@ def test_bot(name):
     scripts = list(set(iterate_scripts()))
     for mod in scripts:
         print(mod.name)
+        del mod
     import pudb
     pudb.set_trace()
-    filtered = list(filter(lambda x: args.testbot in mod.name, iterate_scripts()))
+    filtered = list(filter(lambda x: args.testbot in x.name, iterate_scripts()))
     if len(filtered) != 1:
         print(f"No bot found for {args.testbot}.")
         return
