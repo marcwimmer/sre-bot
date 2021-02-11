@@ -285,15 +285,11 @@ def test_bot(name):
     for mod in scripts:
         print(mod.name)
         del mod
-    import pudb
-    pudb.set_trace()
     filtered = list(filter(lambda x: args.testbot in x.name, iterate_scripts()))
     if len(filtered) != 1:
         print(f"No bot found for {args.testbot}.")
         return
     mod = load_module(filtered[0])
-    import pudb
-    pudb.set_trace()
     mod.run(PseudoClient())
 
 
