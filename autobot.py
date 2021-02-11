@@ -48,6 +48,7 @@ parser.add_argument('-i', '--install', required=False, action='store_true')
 parser.add_argument('-n', '--new', required=False)
 parser.add_argument('-ir', '--install-requirements', required=False)
 parser.add_argument('-t', '--testbot', required=False)
+parser.add_argument('--list-bots', action="store_true")
 args = parser.parse_args()
 
 
@@ -325,7 +326,12 @@ if __name__ == '__main__':
     if args.testbot:
         test_bot(args.testbot)
         sys.exit(0)
-
+    
+    if args.list_bots:
+        for script in iterate_scripts():
+            print(script)
+        sys.exit(0)
+        
     name = config['name']
     atexit.register(cleanup)
 
