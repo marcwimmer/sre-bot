@@ -291,7 +291,7 @@ def test_bot(name):
     if len(filtered) != 1:
         print(f"No bot found for {args.testbot}.")
         return
-    mod = load_module(filtered([0]))
+    mod = load_module(filtered[0])
     import pudb
     pudb.set_trace()
     mod.run(PseudoClient())
