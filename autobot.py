@@ -93,6 +93,9 @@ def make_install():
         
 
     for script_path in iterate_scripts():
+        req_file = script_path.parent / 'requirements.txt'
+        if req_file.exists():
+            subprocess.check_call(["pip3", "install", '-r', req_file])
         mod = load_module(script_path)
         if getattr(mod, 'install', None):
             mod.install(config_file.parent)
