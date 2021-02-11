@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import stat
 import uuid
 import atexit
 import signal
@@ -70,6 +71,7 @@ def make_install():
     bin_autobot.write_text("""#!/bin/bash
 {}/autobot.py "$@"
 """.format(current_dir))
+
 
     if not config_file.exists():
         conf = json.loads((current_dir / 'install' / 'autobot.conf').read_text())
