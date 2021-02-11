@@ -25,7 +25,12 @@ import socket
 
 config_file = Path("/etc/sre/autobot.conf")
 if config_file.exists():
-    config = json.loads(config_file.read_text())
+    try:
+        config = json.loads(config_file.read_text())
+    except:
+        print("config file corrupt:")
+        print(config_file.read_text())
+        sys.exit(0)
 else: config = {}
 
 
