@@ -141,6 +141,7 @@ def iterate_scripts():
         result.add(x)
     return sorted(list(result))
 
+
 def start_main():
     while True:
         for proc in processes:
