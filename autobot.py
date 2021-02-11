@@ -285,7 +285,7 @@ def test_bot(name):
             # return
         # module = answer['module']
     # else:
-    for mod in iterate_modules:
+    for mod in iterate_modules():
         print(mod)
         modules.add(mod)
     if Path(mod.__file__) == args.testbot:
