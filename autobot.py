@@ -131,6 +131,7 @@ def _get_bots_paths():
 
 def iterate_scripts():
     result = set()
+
     def _collect():
         for bots_path in _get_bots_paths():
             for script in bots_path.glob("*.py"):
