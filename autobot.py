@@ -77,6 +77,7 @@ def make_new_file():
     dest_path.write_text(template)
 
 def make_install():
+    global config
     name = 'autobot.service'
 
     bin_autobot = Path('/usr/local/bin/autobot')
