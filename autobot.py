@@ -79,8 +79,8 @@ def make_install():
     print(f"autobot is now in path, you can call him from anywhere.")
     import pudb;pudb.set_trace()
     if not config_file.exists():
-        conf = json.loads((current_dir / 'install' / 'autobot.conf').read_text())
-        conf.setdefault('bots-paths', [])
+        config = json.loads((current_dir / 'install' / 'autobot.conf').read_text())
+        config.setdefault('bots-paths', [])
         config.setdefault('name', socket.gethostname())
         config_file.parent.mkdir(parents=True, exist_ok=True)
         config_file.write_text(json.dumps(conf, indent=4))
