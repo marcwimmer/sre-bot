@@ -23,7 +23,9 @@ import threading
 import inquirer
 
 config_file = Path("/etc/sre/autobot.conf")
-config = json.loads(config_file.read_text())
+if config_file.exists():
+    config = json.loads(config_file.read_text())
+else: config = {}
 
 
 FORMAT = '[%(levelname)s] %(name) -12s %(asctime)s %(message)s'
