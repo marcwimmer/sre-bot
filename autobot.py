@@ -71,6 +71,8 @@ def make_install():
     bin_autobot.write_text("""#!/bin/bash
 {}/autobot.py "$@"
 """.format(current_dir))
+    st = os.stat(bin_autobot)
+    os.chmod(bin_autobot, st.st_mode | stat.S_IEXEC)
 
 
     if not config_file.exists():
