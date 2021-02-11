@@ -19,6 +19,7 @@ from collections import namedtuple
 import hashlib
 from datetime import datetime
 import threading
+import inquirer
 
 config_file = Path("/etc/sre/autobot.conf")
 config = json.loads(config_file.read_text())
@@ -41,6 +42,7 @@ parser.add_argument('-l', metavar="Level", type=str, required=False, default='IN
 parser.add_argument('-i', '--install', required=False, action='store_true')
 parser.add_argument('-n', '--new', required=False)
 parser.add_argument('-ir', '--install-requirements', required=False)
+parser.add_argument('-t', '--testbot', required=False)
 args = parser.parse_args()
 
 
@@ -264,6 +266,22 @@ def kill_all_processes():
 def cleanup():
     kill_all_processes()
 
+class PseudoClient(object):
+    def __init__(self):
+        pass
+
+    def publish(self, path, payload=None, qos=0):
+        print(f"{path}:{qos}: {payload}")
+
+def test_bot(name):
+    import pudb
+    pudb.set_trace()
+    import pudb
+    for mod in iterate_modules:
+        if Path(mod.__file__) == args.testbot:
+            pudb.set_trace()
+            mod.run(PseudoClient())
+
 
 if __name__ == '__main__':
     if args.new:
@@ -272,6 +290,10 @@ if __name__ == '__main__':
 
     if args.install:
         make_install()
+        sys.exit(0)
+
+    if args.testbot:
+        test_bot(args.textbot)
         sys.exit(0)
 
     name = config['name']
