@@ -2,7 +2,7 @@
 Description=SRE Autobot
  
 [Service]
-ExecStart=/usr/bin/python3 __path__
+ExecStart=/usr/bin/python3 __path__ --daemon
  
 [Install]
 WantedBy=multi-user.target
