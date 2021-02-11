@@ -302,7 +302,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     if args.testbot:
-        test_bot(args.textbot)
+        test_bot(args.testbot)
         sys.exit(0)
 
     name = config['name']
