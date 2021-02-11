@@ -21,6 +21,7 @@ import hashlib
 from datetime import datetime
 import threading
 import inquirer
+import socket
 
 config_file = Path("/etc/sre/autobot.conf")
 if config_file.exists():
@@ -80,8 +81,10 @@ def make_install():
     if not config_file.exists():
         conf = json.loads((current_dir / 'install' / 'autobot.conf').read_text())
         conf.setdefault('bots-paths', [])
+        config.setdefault(name, socket.gethostname())
         config_file.parent.mkdir(parents=True, exist_ok=True)
         config_file.write_text(json.dumps(conf, indent=4))
+        
 
     for script_path in iterate_scripts():
         mod = load_module(script_path)
@@ -101,6 +104,9 @@ def make_install():
     print("")
     print(f"Add custom bots in {default_bots_path} using autobot.py --new ....")
     print(f"Clone existing bots to {default_bots_path}")
+    print(f"I setup following name: {config['name']}.")
+    print(f"{config_file}:")
+    print(config_file.read_text())
     sys.exit(0)
 
 def _get_md5(filepath):
