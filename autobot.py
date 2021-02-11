@@ -130,11 +130,16 @@ def _get_bots_paths():
     return bots_paths
 
 def iterate_scripts():
-    for bots_path in _get_bots_paths():
-        for script in bots_path.glob("*.py"):
-            if script.name.startswith("__"):
-                continue
-            yield script
+    result = set()
+    def _collect():
+        for bots_path in _get_bots_paths():
+            for script in bots_path.glob("*.py"):
+                if script.name.startswith("__"):
+                    continue
+                yield script
+    for x in _collect():
+        result.add(x)
+    return sorted(list(result))
 
 def start_main():
     while True:
