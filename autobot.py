@@ -93,7 +93,7 @@ def make_install():
         config_file.parent.mkdir(parents=True, exist_ok=True)
         config_file.write_text(json.dumps(config, indent=4))
         
-
+    import pudb;pudb.set_trace()
     for script_path in iterate_scripts():
         req_file = script_path.parent / 'requirements.txt'
         if req_file.exists():
