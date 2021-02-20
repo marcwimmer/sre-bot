@@ -241,6 +241,7 @@ def on_message(client, userdata, msg):
         try:
             answer_autobot_console(client, msg, userdata)
         except Exception as ex:
+            breakpoint()
             logger.error(ex)
 
 
