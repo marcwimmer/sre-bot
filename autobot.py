@@ -356,6 +356,7 @@ def pull_bots():
             print(f"Executing git pull in {git_dir.parent}")
             subprocess.call(['git', 'pull'])
 
+
 if __name__ == '__main__':
     if args.new:
         make_new_file()
