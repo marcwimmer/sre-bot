@@ -247,8 +247,8 @@ def on_message(client, userdata, msg):
 def answer_autobot_console(client, msg, userdata):
     print(msg.topic)
     splitted = msg.topic.split("/")[2:]  # remove _autobot/console
+    print(splitted)
     console_id = splitted[2]
-    print("B")
 
     if splitted[3] == 'whereAreYou':
         print('here')
