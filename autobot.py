@@ -228,7 +228,6 @@ def load_module(path):
 
 
 def on_message(client, userdata, msg):
-    print(msg.topic)
     logger.debug(f"on_message:{args.s}: {msg.topic} {str(msg.payload)}")
     client2 = mqttwrapper(client, name)
     for module in iterate_modules():
@@ -245,7 +244,7 @@ def on_message(client, userdata, msg):
 
 
 def answer_autobot_console(client, msg, userdata):
-    splitted = msg.split("/")[2:]  # remove _autobot/console
+    splitted = msg.topic.split("/")[2:]  # remove _autobot/console
     console_id = splitted[2]
 
     if splitted[3] == 'whereAreYou':
