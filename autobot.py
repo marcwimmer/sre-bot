@@ -237,12 +237,12 @@ def on_message(client, userdata, msg):
             except Exception as ex:
                 logger.error(ex)
 
-    if msg.topic.startswith("$autobot/console"):
+    if msg.topic.startswith("_autobot/console"):
         answer_autobot_console(client, msg, userdata)
 
 
 def answer_autobot_console(client, msg, userdata):
-    splitted = msg.split("/")[2:]  # remove $autobot/console
+    splitted = msg.split("/")[2:]  # remove _autobot/console
     console_id = splitted[2]
 
     if splitted[3] == 'whereAreYou':
@@ -253,7 +253,7 @@ def response_console_where_are_you(client, console_id):
     answer.append(f"Host: {socket.gethostname()}")
 
     client.publish(
-        f"$autobot/console/{console_id}/answer",
+        f"_autobot/console/{console_id}/answer",
         payload=','.join(answer),
         qos=2,
     )
