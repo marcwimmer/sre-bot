@@ -228,6 +228,7 @@ def load_module(path):
 
 
 def on_message(client, userdata, msg):
+    print(msg.topic)
     logger.debug(f"on_message:{args.s}: {msg.topic} {str(msg.payload)}")
     client2 = mqttwrapper(client, name)
     for module in iterate_modules():
