@@ -258,7 +258,7 @@ def response_console_where_are_you(client, console_id):
 
     client.publish(
         f"_autobot/console/{console_id}/answer",
-        payload=','.join(answer),
+        payload=','.join(map(str, answer)),
         qos=2,
     )
 
