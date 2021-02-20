@@ -241,6 +241,8 @@ def on_message(client, userdata, msg):
         try:
             answer_autobot_console(client, msg, userdata)
         except Exception as ex:
+            import pudb
+            pudb.set_trace()
             logger.error(ex)
 
 
