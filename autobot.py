@@ -251,6 +251,7 @@ def answer_autobot_console(client, msg, userdata):
     console_id = splitted[2]
 
     if splitted[3] == 'whereAreYou':
+        print('here')
         response_console_where_are_you(client, console_id)
 
 def response_console_where_are_you(client, console_id):
