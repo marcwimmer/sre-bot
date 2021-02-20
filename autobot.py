@@ -245,7 +245,6 @@ def on_message(client, userdata, msg):
 
 
 def answer_autobot_console(client, msg, userdata):
-    print(msg.topic)
     splitted = msg.topic.split("/")[2:]  # remove _autobot/console
     console_id = splitted[0]
 
