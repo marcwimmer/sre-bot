@@ -245,6 +245,11 @@ def answer_autobot_console(client, msg, userdata):
     splitted = msg.split("/")[2:]  # remove $autobot/console
     console_id = splitted[2]
 
+    if splitted[3] == 'whereAreYou':
+        response_console_where_are_you(client, console_id))
+
+def response_console_where_are_you(client, console_id):
+
 def run_iter(client, scheduler, module):
     base = datetime.now()
     iter = croniter.croniter(scheduler, base)
