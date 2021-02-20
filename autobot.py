@@ -249,6 +249,13 @@ def answer_autobot_console(client, msg, userdata):
         response_console_where_are_you(client, console_id))
 
 def response_console_where_are_you(client, console_id):
+    answer = []
+    answer.append(f"Host: {socket.gethostname()}")
+
+    client.publish(
+        f"$autobot/console/{console_id}/answer",
+        payload=','.join(answer)
+    )
 
 def run_iter(client, scheduler, module):
     base = datetime.now()
