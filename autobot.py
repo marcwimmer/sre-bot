@@ -86,14 +86,14 @@ def make_install():
 """.format(current_dir))
     os.chmod(bin_autobot, os.stat(bin_autobot).st_mode | stat.S_IEXEC)
     print(f"autobot is now in path, you can call him from anywhere.")
-    
+
     if not config_file.exists():
         config = json.loads((current_dir / 'install' / 'autobot.conf').read_text())
         config.setdefault('bots-paths', [])
         config.setdefault('name', socket.gethostname())
         config_file.parent.mkdir(parents=True, exist_ok=True)
         config_file.write_text(json.dumps(config, indent=4))
-        
+
     for script_path in iterate_scripts():
         req_file = script_path.parent / 'requirements.txt'
         if req_file.exists():
@@ -342,7 +342,7 @@ if __name__ == '__main__':
     if args.testbot:
         test_bot(args.testbot)
         sys.exit(0)
-    
+
     if args.list_bots:
         for script in iterate_scripts():
             print(script)
@@ -351,7 +351,7 @@ if __name__ == '__main__':
     if args.pull_bots:
         pull_bots()
         sys.exit(0)
-        
+
     name = config['name']
     atexit.register(cleanup)
 
