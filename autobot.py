@@ -27,7 +27,7 @@ config_file = Path("/etc/sre/autobot.conf")
 if config_file.exists():
     try:
         config = json.loads(config_file.read_text())
-    except:
+    except Exception:
         print("config file corrupt:")
         print(config_file.read_text())
         sys.exit(0)
