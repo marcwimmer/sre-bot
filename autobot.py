@@ -239,8 +239,6 @@ def on_message(client, userdata, msg):
 
     if msg.topic.startswith("_autobot/console"):
         try:
-            import pudb
-            pudb.set_trace()
             answer_autobot_console(client, msg, userdata)
         except Exception as ex:
             logger.error(ex)
