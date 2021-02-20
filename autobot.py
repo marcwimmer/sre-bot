@@ -247,10 +247,9 @@ def on_message(client, userdata, msg):
 def answer_autobot_console(client, msg, userdata):
     print(msg.topic)
     splitted = msg.topic.split("/")[2:]  # remove _autobot/console
-    print(splitted)
-    console_id = splitted[2]
+    console_id = splitted[0]
 
-    if splitted[3] == 'whereAreYou':
+    if splitted[1] == 'whereAreYou':
         print('here')
         response_console_where_are_you(client, console_id)
 
