@@ -237,6 +237,14 @@ def on_message(client, userdata, msg):
             except Exception as ex:
                 logger.error(ex)
 
+    if msg.topic.startswith("$autobot/console"):
+        answer_autobot_console(client, msg, userdata)
+
+
+def answer_autobot_console(client, msg, userdata):
+    splitted = msg.split("/")[2:]  # remove $autobot/console
+    console_id = splitted[2]
+
 def run_iter(client, scheduler, module):
     base = datetime.now()
     iter = croniter.croniter(scheduler, base)
