@@ -255,6 +255,7 @@ def answer_autobot_console(client, msg, userdata):
 def response_console_where_are_you(client, console_id):
     answer = []
     answer.append(f"Host: {socket.gethostname()}")
+    print("HALLO")
 
     client.publish(
         f"_autobot/console/{console_id}/answer",
