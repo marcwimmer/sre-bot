@@ -246,7 +246,7 @@ def answer_autobot_console(client, msg, userdata):
     console_id = splitted[2]
 
     if splitted[3] == 'whereAreYou':
-        response_console_where_are_you(client, console_id))
+        response_console_where_are_you(client, console_id)
 
 def response_console_where_are_you(client, console_id):
     answer = []
@@ -255,6 +255,7 @@ def response_console_where_are_you(client, console_id):
     client.publish(
         f"$autobot/console/{console_id}/answer",
         payload=','.join(answer)
+        qos=2,
     )
 
 def run_iter(client, scheduler, module):
