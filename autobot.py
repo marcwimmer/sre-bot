@@ -251,8 +251,38 @@ def answer_autobot_console(client, msg, userdata):
     splitted = msg.topic.split("/")[2:]  # remove _autobot/console
     console_id = splitted[0]
 
-    if splitted[1] == 'whereAreYou':
+    if splitted[1] == 'ask_for_capabilities':
+        response_console_capabilities(client, console_id)
+    elif splitted[1] == 'where are you':
         response_console_where_are_you(client, console_id)
+    elif splitted[1] == 'update':
+        response_console_update(client, console_id)
+
+def response_console_capabilities(client, console_id):
+    caps = []
+    caps.append('where are you')
+    caps.append('update')
+    client.publish(
+        f"_autobot/console/{console_id}/capabilities/{name}",
+        payload=','.join(caps),
+        qos=2,
+    )
+
+
+def response_console_update(client, console_id):
+    try:
+        subprocess.check_call(["/usr/bin/git"], cwd=current_dir)
+        subprocess.check_call(["/usr/bin/systemctl", "restart", "autobot"], cwd=current_dir)
+    except Exception:
+        success = False
+    else:
+        success = True
+
+    client.publish(
+        f"_autobot/console/{console_id}/answer",
+        payload=f"Update autobot on {socket.gethostname()} version: {VERSION}: {'success' if success else 'failed'}",
+        qos=2,
+    )
 
 def response_console_where_are_you(client, console_id):
     answer = []
