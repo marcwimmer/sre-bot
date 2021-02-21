@@ -253,10 +253,8 @@ def answer_autobot_console(client, msg, userdata):
         response_console_where_are_you(client, console_id)
 
 def response_console_where_are_you(client, console_id):
-    if args.s:
-        return
     answer = []
-    answer.append(f"Host: {socket.gethostname()}")
+    answer.append(f"Host: {socket.gethostname()}: {args.s}")
 
     client.publish(
         f"_autobot/console/{console_id}/answer",
