@@ -23,6 +23,8 @@ import threading
 import inquirer
 import socket
 
+VERSION = '0.1'
+
 config_file = Path("/etc/sre/autobot.conf")
 if config_file.exists():
     try:
@@ -254,7 +256,7 @@ def answer_autobot_console(client, msg, userdata):
 
 def response_console_where_are_you(client, console_id):
     answer = []
-    answer.append(f"Host: {socket.gethostname()}: {args.s}")
+    answer.append(f"Host: {socket.gethostname()}: {args.s} [version: {VERSION}]")
 
     client.publish(
         f"_autobot/console/{console_id}/answer",
