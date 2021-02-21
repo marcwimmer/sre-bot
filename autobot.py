@@ -253,7 +253,7 @@ def answer_autobot_console(client, msg, userdata):
         response_console_where_are_you(client, console_id)
 
 def response_console_where_are_you(client, console_id):
-    if self.args.s:
+    if args.s:
         return
     answer = []
     answer.append(f"Host: {socket.gethostname()}")
