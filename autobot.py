@@ -196,7 +196,6 @@ def start_main():
 
         time.sleep(1)
 
-
 class mqttwrapper(object):
     def __init__(self, client, hostname):
         self.client = client
@@ -211,6 +210,10 @@ class mqttwrapper(object):
             qos=qos,
             retain=retain
         )
+
+def _get_mqtt_wrapper(client, module):
+    _name = getattr(client, "HOSTNAME", name) if module else name
+    return mqttwrapper(client, _name)
 
 def on_connect(client, userdata, flags, reason, properties):
     logger.debug(f"Client connected {args.s}")
@@ -231,10 +234,10 @@ def load_module(path):
 
 def on_message(client, userdata, msg):
     logger.debug(f"on_message:{args.s}: {msg.topic} {str(msg.payload)}")
-    client2 = mqttwrapper(client, name)
     for module in iterate_modules():
         if getattr(module, 'on_message', None):
             try:
+                client2 = _get_mqtt_wrapper(client, module)
                 module.on_message(client2, userdata, msg)
             except Exception as ex:
                 logger.error(ex)
@@ -304,7 +307,8 @@ def run_iter(client, scheduler, module):
 
             while True:
                 if datetime.now() > next:
-                    client2 = mqttwrapper(client, name)
+
+                    client2 = _get_mqtt_wrapper(client, module)
                     if getattr(module, 'run', None):
                         try:
                             logger.debug(f"Running {args.s}:run")
