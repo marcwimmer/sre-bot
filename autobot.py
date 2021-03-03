@@ -55,6 +55,7 @@ parser.add_argument('-i', '--install', required=False, action='store_true')
 parser.add_argument('-n', '--new', required=False)
 parser.add_argument('-ir', '--install-requirements', required=False)
 parser.add_argument('-t', '--testbot', required=False)
+parser.add_argument('-1', '--exec-once-now', required=False, help="Ignores schedules and executes run of bot now")
 parser.add_argument('--list-bots', action="store_true")
 parser.add_argument('--pull-bots', action="store_true")
 
@@ -326,15 +327,22 @@ def run_iter(client, scheduler, module):
             logger.error(ex)
             time.sleep(1)
 
+def _get_regular_client():
+    client = mqtt.Client(client_id=f"autobot-{name}-{args.s})", protocol=mqtt.MQTTv5)
+    return client
+
+def _connect_client(client):
+    client.connect(config['broker']['ip'], config['broker'].get('port', 1883), 60)
+
 def start_broker():
     logger.info(f"Starting script at {args.s}")
 
-    client = mqtt.Client(client_id=f"autobot-{name}-{args.s})", protocol=mqtt.MQTTv5)
+    client = _get_regular_client()
     client.on_connect = on_connect
     client.on_message = on_message
 
     logger.info(f"Connecting to {config['broker']}")
-    client.connect(config['broker']['ip'], config['broker'].get('port', 1883), 60)
+    _connect_client(client)
 
     module = list(iterate_modules())[0]
 
@@ -373,16 +381,30 @@ class PseudoClient(object):
         print(f"{path}:{qos}: {payload}")
 
 def test_bot(name):
-    scripts = list(set(iterate_scripts()))
-    for mod in scripts:
-        print(mod.name)
-        del mod
+    if not name:
+        scripts = list(set(iterate_scripts()))
+        for mod in scripts:
+            print(mod.name)
+            del mod
+        return
+
     filtered = list(filter(lambda x: args.testbot in x.name, iterate_scripts()))
     if len(filtered) != 1:
         print(f"No bot found for {args.testbot}.")
         return
     mod = load_module(filtered[0])
     mod.run(PseudoClient())
+
+def run_once(name):
+    filtered = list(filter(lambda x: args.exec_once_now in x.name, iterate_scripts()))
+    if len(filtered) != 1:
+        print(f"No bot found for {args.exec_once_now}.")
+        return
+    mod = load_module(filtered[0])
+    client = _get_regular_client()
+    _connect_client(client)
+    client = _get_mqtt_wrapper(client, mod)
+    mod.run(client)
 
 def pull_bots():
     for script in iterate_scripts():
