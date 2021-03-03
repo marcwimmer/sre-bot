@@ -406,6 +406,15 @@ def run_once(name):
     client = _get_mqtt_wrapper(client, mod)
     mod.run(client)
 
+    def disconnect():
+        time.sleep(10)
+        client.disconnect()
+
+    t = threading.Thread(target=disconnect)
+    t.start()
+
+    client.loop_forever()
+
 def pull_bots():
     for script in iterate_scripts():
         git_dir = script.parent / '.git'
