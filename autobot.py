@@ -415,6 +415,7 @@ def pull_bots():
 
 
 if __name__ == '__main__':
+    name = config['name']
     if args.new:
         make_new_file()
         sys.exit(0)
@@ -440,7 +441,6 @@ if __name__ == '__main__':
         pull_bots()
         sys.exit(0)
 
-    name = config['name']
     atexit.register(cleanup)
 
     if not args.s:
