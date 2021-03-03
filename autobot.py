@@ -213,7 +213,7 @@ class mqttwrapper(object):
         )
 
 def _get_mqtt_wrapper(client, module):
-    _name = getattr(client, "HOSTNAME", name) if module else name
+    _name = getattr(module, "HOSTNAME", name) if module else name
     return mqttwrapper(client, _name)
 
 def on_connect(client, userdata, flags, reason, properties):
