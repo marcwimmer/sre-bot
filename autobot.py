@@ -427,6 +427,10 @@ if __name__ == '__main__':
         test_bot(args.testbot)
         sys.exit(0)
 
+    if args.exec_once_now:
+        run_once(args.exec_once_now)
+        sys.exit(0)
+
     if args.list_bots:
         for script in iterate_scripts():
             print(script)
