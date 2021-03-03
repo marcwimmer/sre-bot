@@ -406,6 +406,7 @@ def run_once(name):
     client = _get_mqtt_wrapper(client, mod)
     client.loop_start()
     mod.run(client)
+    print("Running mqtt for 10 seconds to publish items")
     time.sleep(10)
     client.disconnect()
     client.loop_stop()
