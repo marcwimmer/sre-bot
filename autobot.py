@@ -401,15 +401,15 @@ def run_once(name):
         print(f"No bot found for {args.exec_once_now}.")
         return
     mod = load_module(filtered[0])
-    client = _get_regular_client()
-    _connect_client(client)
-    client = _get_mqtt_wrapper(client, mod)
-    client.loop_start()
+    reg_client = _get_regular_client()
+    _connect_client(reg_client)
+    client = _get_mqtt_wrapper(reg_client, mod)
+    reg_client.loop_start()
     mod.run(client)
     print("Running mqtt for 10 seconds to publish items")
     time.sleep(10)
-    client.disconnect()
-    client.loop_stop()
+    reg_client.disconnect()
+    reg_client.loop_stop()
 
 def pull_bots():
     for script in iterate_scripts():
