@@ -404,16 +404,11 @@ def run_once(name):
     client = _get_regular_client()
     _connect_client(client)
     client = _get_mqtt_wrapper(client, mod)
+    client.loop_start()
     mod.run(client)
-
-    def disconnect():
-        time.sleep(10)
-        client.disconnect()
-
-    t = threading.Thread(target=disconnect)
-    t.start()
-
-    client.loop_forever()
+    time.sleep(10)
+    client.disconnect()
+    client.loop_stop()
 
 def pull_bots():
     for script in iterate_scripts():
