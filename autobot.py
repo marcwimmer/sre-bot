@@ -318,6 +318,7 @@ def run_iter(client, scheduler, module):
                         except Exception as ex:
                             client2.publish(Path(args.s).name + '/rc', payload=1)
                             client2.publish(Path(args.s).name + '/last_error', payload=str(ex))
+                            client2.publish('/last_error', payload=f"{args.s}\n{ex}")
                             logger.error(ex)
                             time.sleep(1)
                     break
