@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import arrow
 import stat
 import uuid
 import atexit
@@ -209,6 +210,9 @@ class mqttwrapper(object):
         value = {
             'module': self.modulename,
             'value': payload,
+            # cannot use msg.timestamp - they use time.monotonic() which results
+            # in consecutive calls results starting from 1970
+            'timestamp': str(arrow.get().to('utc')),
         }
         self.client.publish(
             path,
@@ -245,8 +249,11 @@ def on_message(client, userdata, msg):
         if getattr(module, 'on_message', None):
             try:
                 client2 = _get_mqtt_wrapper(client, module)
-                msg = json.loads(msg.payload)
-                module.on_message(client2, userdata, msg)
+                try:
+                    value = json.loads(msg.payload)
+                except Exception:
+                    value = None
+                module.on_message(client2, msg, value)
 
             except Exception as ex:
                 logger.error(ex)
