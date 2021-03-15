@@ -252,7 +252,12 @@ def on_message(client, userdata, msg):
                 try:
                     value = json.loads(msg.payload)
                 except Exception:
-                    value = None
+                    # default values
+                    value = {
+                        'value': msg.payload,
+                        'timestamp': str(arrow.get().to('utc')),
+                        'module': None,
+                    }
                 module.on_message(client2, msg, value)
 
             except Exception as ex:
