@@ -133,7 +133,7 @@ def _get_md5(filepath):
 def start_proc(path):
     logger.info(f"Starting {path}...")
     process = subprocess.Popen([
-        '/usr/bin/python3',
+        sys.executable,
         current_dir / 'autobot.py',
         '-s', path,
         '-l', args.l,
