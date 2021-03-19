@@ -138,7 +138,7 @@ def start_proc(path):
     os.system(f"pkill -9 -f '{path}'")
 
     process = subprocess.Popen([
-        '/usr/bin/python3',
+        sys.executable,
         current_dir / 'autobot.py',
         '-s', path,
         '-l', args.l,
