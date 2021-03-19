@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import arrow
 import stat
 import uuid
 import atexit
@@ -198,23 +199,32 @@ def start_main():
         time.sleep(1)
 
 class mqttwrapper(object):
-    def __init__(self, client, hostname):
+    def __init__(self, client, hostname, modulename):
         self.client = client
         self.hostname = hostname
         self.logger = logger
+        self.modulename = modulename
 
     def publish(self, path, payload=None, qos=0, retain=False):
         path = self.hostname + '/' + path
+        value = {
+            'module': self.modulename,
+            'value': payload,
+            # cannot use msg.timestamp - they use time.monotonic() which results
+            # in consecutive calls results starting from 1970
+            'timestamp': str(arrow.get().to('utc')),
+        }
         self.client.publish(
             path,
-            payload=payload,
+            payload=json.dumps(value),
             qos=qos,
             retain=retain
         )
 
 def _get_mqtt_wrapper(client, module):
     _name = getattr(module, "HOSTNAME", name) if module else name
-    return mqttwrapper(client, _name)
+    _modulename = Path(module.__file__).stem
+    return mqttwrapper(client, _name, _modulename)
 
 def on_connect(client, userdata, flags, reason, properties):
     logger.debug(f"Client connected {args.s}")
@@ -239,7 +249,17 @@ def on_message(client, userdata, msg):
         if getattr(module, 'on_message', None):
             try:
                 client2 = _get_mqtt_wrapper(client, module)
-                module.on_message(client2, userdata, msg)
+                try:
+                    value = json.loads(msg.payload)
+                except Exception:
+                    # default values
+                    value = {
+                        'value': msg.payload,
+                        'timestamp': str(arrow.get().to('utc')),
+                        'module': None,
+                    }
+                module.on_message(client2, msg, value)
+
             except Exception as ex:
                 logger.error(ex)
 
