@@ -133,6 +133,10 @@ def _get_md5(filepath):
 
 def start_proc(path):
     logger.info(f"Starting {path}...")
+    path = str(path).absolute()
+
+    os.system(f"pkill -9 -f '{path}'")
+
     process = subprocess.Popen([
         '/usr/bin/python3',
         current_dir / 'autobot.py',
@@ -475,5 +479,5 @@ if __name__ == '__main__':
         else:
             print("Please call with --daemon.")
     else:
-        script = Path(args.s)
+        script = Path(args.s).absolute()
         start_broker()
