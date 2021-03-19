@@ -133,7 +133,7 @@ def _get_md5(filepath):
 
 def start_proc(path):
     logger.info(f"Starting {path}...")
-    path = str(path).absolute()
+    path = path.absolute()
 
     os.system(f"pkill -9 -f '{path}'")
 
