@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import traceback
 import arrow
 import stat
 import uuid
@@ -265,6 +266,7 @@ def on_message(client, userdata, msg):
                 module.on_message(client2, msg, value)
 
             except Exception as ex:
+                logger.error(traceback.format_exc())
                 logger.error(ex)
 
     if msg.topic.startswith("_autobot/console"):
