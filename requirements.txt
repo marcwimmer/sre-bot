@@ -1,2 +1,5 @@
 paho-mqtt
 croniter
+arrow
+inquirer
+pudb
