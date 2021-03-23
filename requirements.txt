@@ -1,5 +1,5 @@
-paho-mqtt
-croniter
-arrow
-inquirer
+paho-mqtt==1.5.1
+croniter==1.0.8
+arrow==1.0.3
+inquirer==2.7.0
 pudb
