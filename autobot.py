@@ -417,7 +417,7 @@ def test_bot(name):
 
     filtered = list(filter(lambda x: args.testbot in x.name, iterate_scripts()))
     if len(filtered) != 1:
-        print(f"No bot found for {args.testbot}.")
+        print(f"No bot found for {args.testbot}. Or Too many found: {filtered}")
         return
     mod = load_module(filtered[0])
     mod.run(PseudoClient())
@@ -425,7 +425,7 @@ def test_bot(name):
 def run_once(name):
     filtered = list(filter(lambda x: args.exec_once_now in x.name, iterate_scripts()))
     if len(filtered) != 1:
-        print(f"No bot found for {args.exec_once_now}.")
+        print(f"No bot found for {args.testbot}. Or Too many found: {filtered}")
         return
     mod = load_module(filtered[0])
     reg_client = _get_regular_client()
