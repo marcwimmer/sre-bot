@@ -20,11 +20,12 @@ import json
 import textwrap
 from collections import namedtuple
 import hashlib
-from datetime import datetime
+from datetime import datetime, timedelta
 import threading
 import inquirer
 import socket
 import http.server
+from contextlib import contextmanager
 
 VERSION = '0.1'
 
@@ -182,35 +183,31 @@ def iterate_scripts():
         result.add(x)
     return sorted(list(result))
 
+
+@contextmanager
+def _onetime_client(timeout=10):
+    data = {'stop': False}
+    def on_publish(client, userdata, mid):
+        data['stop'] = True
+
+    client = _get_regular_client(name_appendix="_webtrigger")
+    client.on_publish = on_publish
+    _connect_client(client)
+    yield client
+    timeout = arrow.get().shift(seconds=timeout)
+    while not data['stop'] and arrow.get() < timeout:
+        client.loop(0.1)
+    client.disconnect()
+
 class Handler(http.server.SimpleHTTPRequestHandler) :
     # A new Handler is created for every incommming request tho do_XYZ
     # methods correspond to different HTTP methods.
 
-    def _send(self, topic, payload, qos):
-        stop = False
-        def on_publish(client, userdata, mid):
-            global stop
-            stop = True
-
-        quos = 0
-        client = _get_regular_client(name_appendix="_webtrigger")
-        _connect_client(client)
-        client.on_publish = on_publish
-        client.publish(topic, payload, qos)
-        timeout = arrow.get().shift(minutes=2)
-        while not stop and arrow.get() < timeout:
-            client.loop(0.1)
-        client.disconnect()
-
     def do_GET(self):
         if self.path != "/":
             if self.path.startswith("/trigger/"):
-                t = threading.Thread(target=self._send, args=(
-                    self.path[1:], '1', 2
-                ))
-                t.daemon = True
-                t.start()
-                t.join() # TODO remove
+                with _onetime_client() as client:
+                    client.publish(self.path[1:], '1', 2)
 
         self.send_response(200)
         self.send_header("Content-type", "text/html")
@@ -479,8 +476,8 @@ def run_once(name):
     client = _get_mqtt_wrapper(reg_client, mod)
     reg_client.loop_start()
     mod.run(client)
-    print("Running mqtt for 10 seconds to publish items")
-    time.sleep(10)
+    print("Running mqtt for 4 seconds to publish items")
+    time.sleep(4)
     reg_client.disconnect()
     reg_client.loop_stop()
 
