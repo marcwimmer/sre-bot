@@ -24,6 +24,7 @@ from datetime import datetime
 import threading
 import inquirer
 import socket
+import http.server
 
 VERSION = '0.1'
 
@@ -51,7 +52,7 @@ Easily runs observing scripts and publishes to mqtt. Receiving also possible.
 
 """)
 parser.add_argument('-s', metavar="Script", type=str, required=False)
-parser.add_argument('-l', metavar="Level", type=str, required=False, default='INFO')
+parser.add_argument('-l', '--logs', action="store_true")
 parser.add_argument('-d', '--daemon', action="store_true")
 parser.add_argument('-i', '--install', required=False, action='store_true')
 parser.add_argument('-n', '--new', required=False)
@@ -64,7 +65,7 @@ parser.add_argument('--pull-bots', action="store_true")
 args = parser.parse_args()
 
 
-logging.getLogger().setLevel(args.l.upper())
+logging.getLogger().setLevel(config.get("log_level", "INFO").upper())
 default_bots_path = Path('/etc/sre/bots.d')
 
 processes = []
@@ -142,7 +143,6 @@ def start_proc(path):
         sys.executable,
         current_dir / 'autobot.py',
         '-s', path,
-        '-l', args.l,
     ])
     md5 = _get_md5(path)
     processes.append(PROC(process=process, path=path, md5=md5))
@@ -182,8 +182,51 @@ def iterate_scripts():
         result.add(x)
     return sorted(list(result))
 
+class Handler(http.server.SimpleHTTPRequestHandler) :
+    # A new Handler is created for every incommming request tho do_XYZ
+    # methods correspond to different HTTP methods.
+
+    def _send(self, topic, payload, qos):
+        stop = False
+        def on_publish(client, userdata, mid):
+            global stop
+            stop = True
+
+        quos = 0
+        client = _get_regular_client(name_appendix="_webtrigger")
+        _connect_client(client)
+        client.on_publish = on_publish
+        client.publish(topic, payload, qos)
+        timeout = arrow.get().shift(minutes=2)
+        while not stop and arrow.get() < timeout:
+            client.loop(0.1)
+        client.disconnect()
+
+    def do_GET(self):
+        if self.path != "/":
+            if self.path.startswith("/trigger/"):
+                t = threading.Thread(target=self._send, args=(
+                    self.path[1:], '1', 2
+                ))
+                t.daemon = True
+                t.start()
+                t.join() # TODO remove
+
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+
+def start_webserver():
+    http_server = http.server.HTTPServer(
+        (config['http_address'], int(config['http_port'])
+    ), Handler)
+    http_server.serve_forever()
 
 def start_main():
+    t = threading.Thread(target=start_webserver,)
+    t.daemon = True
+    t.start()
+
     while True:
         for proc in processes:
             if _get_md5(proc.path) != proc.md5:
@@ -249,7 +292,7 @@ def load_module(path):
 
 
 def on_message(client, userdata, msg):
-    logger.debug(f"on_message:{args.s}: {msg.topic} {str(msg.payload)}")
+    logger.info(f"on_message:{args.s}: {msg.topic} {str(msg.payload)}")
     for module in iterate_modules():
         if getattr(module, 'on_message', None):
             try:
@@ -354,8 +397,11 @@ def run_iter(client, scheduler, module):
             logger.error(ex)
             time.sleep(1)
 
-def _get_regular_client():
-    client = mqtt.Client(client_id=f"autobot-{name}-{args.s})", protocol=mqtt.MQTTv5)
+def _get_regular_client(name_appendix=None):
+    local_name = name
+    if name_appendix:
+        local_name += name_appendix
+    client = mqtt.Client(client_id=f"autobot-{local_name}-{args.s})", protocol=mqtt.MQTTv5)
     return client
 
 def _connect_client(client):
@@ -445,6 +491,9 @@ def pull_bots():
             print(f"Executing git pull in {git_dir.parent}")
             subprocess.call(['git', 'pull'])
 
+def show_logs():
+    subprocess.run(["journalctl", "-u", "autobot"])
+
 
 if __name__ == '__main__':
     name = config['name']
@@ -471,6 +520,10 @@ if __name__ == '__main__':
 
     if args.pull_bots:
         pull_bots()
+        sys.exit(0)
+
+    if args.logs:
+        show_logs()
         sys.exit(0)
 
     atexit.register(cleanup)
