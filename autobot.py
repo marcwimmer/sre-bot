@@ -219,7 +219,7 @@ class Handler(http.server.SimpleHTTPRequestHandler) :
         self.end_headers()
 
 def start_webserver():
-    if not config.get("http_server"):
+    if not config.get("http_address"):
         return
 
     http_server = http.server.HTTPServer(
