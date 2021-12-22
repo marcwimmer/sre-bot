@@ -42,8 +42,16 @@ else: config = {}
 
 
 FORMAT = '[%(levelname)s] %(name) -12s %(asctime)s %(message)s'
+formatter = logging.Formatter(FORMAT)
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger('')  # root handler
+output_file_handler = logging.FileHandler("/var/log/autobot.log")
+stdout_handler = logging.StreamHandler(sys.stdout)
+logger.addHandler(output_file_handler)
+logger.addHandler(stdout_handler)
+output_file_handler.setFormatter(formatter)
+stdout_handler.setFormatter(formatter)
+
 current_dir = Path(sys.path[0])
 
 PROC = namedtuple("Process", field_names=("process", "path", "md5"))
@@ -297,7 +305,7 @@ def load_module(path):
 
 
 def on_message(client, userdata, msg):
-    logger.info(f"on_message:{args.s}: {msg.topic} {str(msg.payload)}")
+    logger.debug(f"on_message:{args.s}: {msg.topic} {str(msg.payload)}")
     for module in iterate_modules():
         if getattr(module, 'on_message', None):
             try:
@@ -419,7 +427,7 @@ def start_broker():
     client.on_connect = on_connect
     client.on_message = on_message
 
-    logger.info(f"Connecting to {config['broker']}")
+    logger.debug(f"Connecting to {config['broker']}")
     _connect_client(client)
 
     module = list(iterate_modules())[0]

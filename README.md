@@ -51,3 +51,16 @@ Calling a webhook
   * useful together with zabbix
 
 
+
+
+Zabbix Trigger
+----------------------
+```python
+import json
+
+def on_message(client, msg, payload=None):
+    if 'trigger/zabbix' in msg.topic:
+        data = json.loads(msg.payload.decode('utf-8'))
+        if data.get('OPDATA') == 'restart_queuejobs' and data.get("ERROR") == "1":
+            client.publish("restart_queuejobs")
+```
