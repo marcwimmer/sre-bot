@@ -204,3 +204,22 @@ def daemon(config):
                 kill_proc(proc, 1)
 
         time.sleep(2)
+
+@cli.command(name="state")
+@pass_config
+def state(config):
+    scripts = iterate_scripts(config)
+    defaults = []
+    for script in scripts:
+        script = str(script)
+        if script not in config.config.get('disabled', []):
+            defaults.append(script)
+    questions = [inquirer.Checkbox('state', message="Turn on bots", choices=scripts, default=defaults)]
+    answer = inquirer.prompt(questions)
+
+    disabled = []
+    for script in scripts:
+        if script not in answer['state']:
+            disabled.append(str(script))
+    config.config['disabled'] = disabled
+    config.store_config()
