@@ -194,6 +194,8 @@ def daemon(config):
                 start_proc(config, proc.path)
 
         for script in iterate_scripts(config):
+            if str(script) in config.config.get('disabled', []):
+                continue
             if not [x for x in config.processes if x.path == script]:
                 config.logger.info(f"Detected new script: {script}")
                 start_proc(config, script)
