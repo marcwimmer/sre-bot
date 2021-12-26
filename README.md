@@ -7,7 +7,7 @@ Recommended way is to use a virtual-env like:
 
 ```bash
 python3 -m venv /var/lib/sre-bot
-. /var/lib/sre-bot
+. /var/lib/sre-bot/bin/activate
 pip install wheel
 pip install sre-bot
 ```
