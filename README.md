@@ -35,18 +35,16 @@ sre new test-bot.py
 Capabilities in bots
 ============================
 
-
 ```python
 HOSTNAME = "my-virtual-host1"
-
 
 SCHEDULERS = ["*/10 * * * * *"]
 
 def run(client):
-    client.publish('house/bulb5', payload='off', qos=2)
+    client.publish('house/bulb5', 'off', qos=2)
 
 def on_message(client, msg, payload=None):
-    ...
+    if msg.topic = '....':
 
 # optional:
 def install():
