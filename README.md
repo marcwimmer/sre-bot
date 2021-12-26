@@ -58,7 +58,7 @@ def on_message(client, msg, payload=None):
 
 # Calling a webhook
 
-  * call http://address:port/trigger/mymachine/restart and a msg with topci "mymachine/restart" is send
+  * call http://address:port/trigger/mymachine/restart and a msg with topic "mymachine/restart" is sent
   * useful together with zabbix
 
 
