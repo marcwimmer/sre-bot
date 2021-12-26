@@ -7,3 +7,7 @@ def run(client):
 
 def on_message(client, msg, payload=None):
     print(msg.topic)
+
+
+def install():
+    pass
