@@ -18,7 +18,7 @@ from setuptools.command.install import install
 from subprocess import check_call, check_output
 
 # Package meta-data.
-NAME = 'srebot'
+NAME = 'sre-bot'
 DESCRIPTION = 'Data collector / executor - Site Reliability Framework'
 URL = 'https://github.com/marcwimmer/sre-bot'
 EMAIL = 'marc@itewimmer.de'

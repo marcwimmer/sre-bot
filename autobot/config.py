@@ -2,9 +2,13 @@ import atexit
 import click
 import logging
 from pathlib import Path
+import sys
+from .tools import _raise_error, cleanup
+import json
+import socket
 
 class Config(object):
-    def __init__(self, log_level):
+    def __init__(self, log_level='info'):
         super().__init__()
 
         print("""
@@ -14,7 +18,11 @@ class Config(object):
         self.current_dir = Path(sys.path[0])
         self.load_config()
         self.processes = []
+        self.level = 'info'
         atexit.register(cleanup)
+
+    def set_log_level(self, level):
+        self.level = level
 
     def setup_logging(self):
         FORMAT = '[%(levelname)s] %(name) -12s %(asctime)s %(message)s'
@@ -42,5 +50,6 @@ class Config(object):
         config.setdefault('name', socket.gethostname())
         self.config_file.parent.mkdir(parents=True, exist_ok=True)
         self.config_file.write_text(json.dumps(config, indent=4))
+
 
 pass_config = click.make_pass_decorator(Config, ensure=True)
