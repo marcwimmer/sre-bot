@@ -6,6 +6,11 @@ class Handler(http.server.SimpleHTTPRequestHandler) :
     # A new Handler is created for every incommming request tho do_XYZ
     # methods correspond to different HTTP methods.
 
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+
     def do_POST(self):
         from .tools import _onetime_client
         if self.path != "/":
@@ -25,6 +30,7 @@ def start_webserver():
     from . import global_data
     config = global_data['config'].config
     if not config.get("http_address"):
+        global_data['config'].logger.info("No webserver configured - triggering on this host not possible.")
         return
 
     http_server = http.server.HTTPServer(
