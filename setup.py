@@ -28,7 +28,7 @@ VERSION = '0.0.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    "wheel",
+    "wheel", "simplejson",
     "paho-mqtt", "click", "croniter", "arrow", "pudb", "pathlib", "pyyaml", "inquirer"
 ]
 

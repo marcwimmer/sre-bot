@@ -1,4 +1,5 @@
 import os
+import arrow
 import hashlib
 import time
 import inquirer
@@ -8,6 +9,7 @@ import subprocess
 from pathlib import Path
 from collections import namedtuple
 from importlib import import_module
+from contextlib import contextmanager
 import importlib.util
 
 PROC = namedtuple("Process", field_names=("process", "path", "md5"))
@@ -123,3 +125,20 @@ def load_module(path):
     foo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(foo)
     return foo
+
+@contextmanager
+def _onetime_client(name_appendix, timeout=10):
+    from .mqtt_tools import _get_regular_client
+    from .mqtt_tools import _connect_client
+    data = {'stop': False}
+    def on_publish(client, userdata, mid):
+        data['stop'] = True
+
+    client = _get_regular_client(name_appendix=name_appendix)
+    client.on_publish = on_publish
+    _connect_client(client)
+    yield client
+    timeout = arrow.get().shift(seconds=timeout)
+    while not data['stop'] and arrow.get() < timeout:
+        client.loop(0.1)
+    client.disconnect()

@@ -22,6 +22,8 @@ from .mqtt_tools import PseudoClient
 from .tools import _get_md5, _raise_error, PROC, iterate_scripts, _get_robot_file, kill_proc, _select_bot_path, load_module
 from . import global_data
 from . mqtt_tools import _get_mqtt_wrapper, _connect_client, _get_regular_client, on_connect, on_message
+from .webserver import start_webserver
+from .tools import _onetime_client
 
 
 VERSION = '0.2'
@@ -171,10 +173,8 @@ def run(config, script, once, kill_others):
 
     for scheduler in module.SCHEDULERS:
         if once:
-            client.loop_start()
-            run_iter(config, client, scheduler, module, once=True)
-            client.loop_stop()
-            client.disconnect()
+            with _onetime_client('_run_once') as client:
+                run_iter(config, client, scheduler, module, once=True)
             return
         else:
             t = threading.Thread(target=run_iter, args=(config, client, scheduler, module, False))
@@ -186,6 +186,10 @@ def run(config, script, once, kill_others):
 @cli.command(help="Start main loop or sub daemon script (called by service usually)")
 @pass_config
 def daemon(config):
+    t = threading.Thread(target=start_webserver,)
+    t.daemon = True
+    t.start()
+
     while True:
         for proc in config.processes:
             if _get_md5(proc.path) != proc.md5:
