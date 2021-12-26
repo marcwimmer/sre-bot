@@ -45,14 +45,15 @@ def install_requirements():
 def install_executable(name):
     from . import global_data
     bin_dir = Path("/usr/local/bin")
+    if name != 'sre':
+        name = 'sre.' + name
     path = bin_dir / name
-    if not path.exists():
-        path.write_text("""#!/bin/bash
+    path.write_text("""#!/bin/bash
 {exe} {script} --config-file '{config_file}' "$@"
-        """.format(
-            config_file=global_data['config'].config_file,
-            exe=sys.executable,
-            script=sys.argv[0],
-        ))
-        os.chmod(path, 555)
-        click.secho(f"Installed new executable in {path}", fg='green')
+    """.format(
+        config_file=global_data['config'].config_file,
+        exe=sys.executable,
+        script=sys.argv[0],
+    ))
+    os.chmod(path, 555)
+    click.secho(f"Installed new executable in {path}", fg='green')

@@ -87,7 +87,9 @@ def start_proc(config, path):
     config = global_data['config']
     config.processes.append(PROC(process=process, path=path, md5=md5))
 
-def run_iter(config, client, scheduler, module):
+def run_iter(config, client, scheduler, module, once):
+    from . import global_data
+    global_data['config'] = config
     base = datetime.now()
     iter = croniter.croniter(scheduler, base)
     while True:
@@ -96,10 +98,10 @@ def run_iter(config, client, scheduler, module):
             config.logger.debug(f"Executing {module} next at {next.strftime('%Y-%m-%d %H:%M:%S')}")
 
             while True:
-                if datetime.now() > next:
+                if datetime.now() > next or once:
 
                     client2 = _get_mqtt_wrapper(client, module)
-                    script_file = config.config['script_file']
+                    script_file = config.bot
                     if getattr(module, 'run', None):
                         try:
                             config.logger.debug(f"Running {script_file}:run")
@@ -115,10 +117,12 @@ def run_iter(config, client, scheduler, module):
                 time.sleep(0.5)
 
         except Exception as ex:
-            import traceback
             msg = traceback.format_exc()
             config.logger.error(msg)
             time.sleep(1)
+        finally:
+            if once:
+                return
 
 @cli.command(help="Name of script within search directories")
 @click.argument("name")
@@ -144,12 +148,14 @@ def add_bot_path(config, path):
 @click.argument('script', required=False)
 @pass_config
 def run(config, script, once):
+    if not script:
+        script = _get_robot_file(config, '')
     script = Path(script).absolute()
     module = load_module(script)
     if not getattr(module, 'SCHEDULERS', None):
         return
     config.logger.info(f"Starting script at {script}")
-    config.config['script_file'] = script
+    config.bot = script
     client = _get_regular_client(config.config['name'], script)
     client.on_connect = on_connect
     client.on_message = on_message
@@ -158,15 +164,17 @@ def run(config, script, once):
     _connect_client(client)
 
     for scheduler in module.SCHEDULERS:
-        t = threading.Thread(target=run_iter, args=(config, client, scheduler, module))
-        t.daemon = False
-        t.start()
         if once:
             client.loop_start()
-            t.join()
+            run_iter(config, client, scheduler, module, once=True)
             client.loop_stop()
             client.disconnect()
             return
+        else:
+            t = threading.Thread(target=run_iter, args=(config, client, scheduler, module, False))
+            t.daemon = False
+            t.start()
+            t.join
     client.loop_forever()
 
 @cli.command(help="Start main loop or sub daemon script (called by service usually)")

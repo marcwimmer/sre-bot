@@ -60,7 +60,6 @@ def on_message(client, userdata, msg):
     from .tools import load_module
     if not config.bot:
         return
-    import pudb;pudb.set_trace()
     module = load_module(config.bot)
     if getattr(module, 'on_message', None):
         try:
