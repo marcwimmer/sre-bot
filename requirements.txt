@@ -3,3 +3,4 @@ croniter==1.0.8
 arrow==1.0.3
 inquirer==2.7.0
 pudb
+simplejson
