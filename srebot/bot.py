@@ -208,10 +208,10 @@ def daemon(config):
 @cli.command(name="state")
 @pass_config
 def state(config):
-    scripts = iterate_scripts(config)
+    scripts = list(sorted(map(str, iterate_scripts(config))))
     defaults = []
     for script in scripts:
-        script = str(script)
+        script = script
         if script not in config.config.get('disabled', []):
             defaults.append(script)
     questions = [inquirer.Checkbox('state', message="Turn on bots", choices=scripts, default=defaults)]
@@ -220,6 +220,7 @@ def state(config):
     disabled = []
     for script in scripts:
         if script not in answer['state']:
-            disabled.append(str(script))
+            disabled.append(script)
     config.config['disabled'] = disabled
     config.store_config()
+    click.secho("Settings applied. Dont forget to restart the service.", fg='yellow')
