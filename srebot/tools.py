@@ -1,10 +1,14 @@
+import os
 import hashlib
 import time
 import inquirer
 import click
 import sys
+import subprocess
 from pathlib import Path
 from collections import namedtuple
+from importlib import import_module
+import importlib.util
 
 PROC = namedtuple("Process", field_names=("process", "path", "md5"))
 
@@ -112,3 +116,10 @@ def _select_bot_path():
         return
     path = answer['path']
     return path
+
+def load_module(path):
+    mod_name = path.name.rsplit(".", 1)[0]
+    spec = importlib.util.spec_from_file_location(mod_name, path)
+    foo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(foo)
+    return foo

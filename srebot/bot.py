@@ -9,10 +9,8 @@ import argparse
 import inquirer
 import sys
 from pathlib import Path
-from importlib import import_module
 import os
 import croniter
-import importlib.util
 import subprocess
 import json
 from datetime import datetime
@@ -21,9 +19,9 @@ import click
 from . import cli
 from .config import pass_config
 from .mqtt_tools import PseudoClient
-from .tools import _get_md5, _raise_error, PROC, iterate_scripts, _get_robot_file, kill_proc, _select_bot_path
+from .tools import _get_md5, _raise_error, PROC, iterate_scripts, _get_robot_file, kill_proc, _select_bot_path, load_module
 from . import global_data
-from . mqtt_tools import _get_mqtt_wrapper, _connect_client, _get_regular_client, on_connect
+from . mqtt_tools import _get_mqtt_wrapper, _connect_client, _get_regular_client, on_connect, on_message
 
 
 VERSION = '0.2'
@@ -45,26 +43,22 @@ def make_new_file(config, name):
     click.secho(f"Created new bot in {dest_path}", fg='green')
 
 @cli.command(name="install", help="Installs all new requirements of bots and installs as a system service.")
-@click.argument("name")
+@click.option("-n", "--name", required=False, default='sre')
 @pass_config
 def make_install(config, name):
     from . install_services import install_systemd
+    from . install_services import install_requirements
+    from . install_services import install_executable
     config = global_data['config']
 
-    # rewrite using virtual env
-    for script_path in iterate_scripts(config):
-        req_file = script_path.parent / 'requirements.txt'
-        if req_file.exists():
-            subprocess.check_call(["pip3", "install", '-r', req_file])
-        mod = load_module(script_path)
-        if getattr(mod, 'install', None):
-            mod.install()
-
-    name = 'sre.service'
+    install_requirements()
+    install_executable(name)
+    if not name.endswith('.service'):
+        name = name + ".service"
     install_systemd(name)
 
     paths = ', '.join(config.config['bots-paths'])
-    click.secho(f"Add custom bots in {paths} using autobot.py --new ....", fg='yellow')
+    click.secho(f"Add custom bots in {paths} using: name new bot1", fg='yellow')
     click.secho(f"I setup following name: {name}.")
     click.secho(f"{config.config_file}:")
     click.secho(config.config_file.read_text())
@@ -92,36 +86,6 @@ def start_proc(config, path):
     md5 = _get_md5(path)
     config = global_data['config']
     config.processes.append(PROC(process=process, path=path, md5=md5))
-
-def load_module(path):
-    mod_name = path.name.rsplit(".", 1)[0]
-    spec = importlib.util.spec_from_file_location(mod_name, path)
-    foo = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(foo)
-    return foo
-
-def on_message(client, userdata, msg):
-    config = global_data['config']
-    config.logger.debug(f"on_message: {msg.topic} {str(msg.payload)}")
-    for script in iterate_scripts(config):
-        module = load_module(script)
-        if getattr(module, 'on_message', None):
-            try:
-                client2 = _get_mqtt_wrapper(client, module)
-                try:
-                    value = json.loads(msg.payload)
-                except Exception:
-                    # default values
-                    value = {
-                        'value': msg.payload,
-                        'timestamp': str(arrow.get().to('utc')),
-                        'module': None,
-                    }
-                module.on_message(client2, msg, value)
-
-            except Exception as ex:
-                _raise_error(str(traceback.format_exc()) + '\n\n' + str(ex))
-
 
 def run_iter(config, client, scheduler, module):
     base = datetime.now()

@@ -52,3 +52,26 @@ def _connect_client(client):
 def on_connect(client, userdata, flags, reason, properties):
     global_data['config'].logger.debug(f"Client connected")
     client.subscribe("#")
+
+def on_message(client, userdata, msg):
+    config = global_data['config']
+    config.logger.debug(f"on_message: {msg.topic} {str(msg.payload)}")
+    for script in iterate_scripts(config):
+        module = load_module(script)
+        if getattr(module, 'on_message', None):
+            try:
+                client2 = _get_mqtt_wrapper(client, module)
+                try:
+                    value = json.loads(msg.payload)
+                except Exception:
+                    # default values
+                    value = {
+                        'value': msg.payload,
+                        'timestamp': str(arrow.get().to('utc')),
+                        'module': None,
+                    }
+                module.on_message(client2, msg, value)
+
+            except Exception as ex:
+                _raise_error(str(traceback.format_exc()) + '\n\n' + str(ex))
+
