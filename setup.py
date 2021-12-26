@@ -103,7 +103,13 @@ class InstallCommand(install):
     def run(self):
         install.run(self)
         self.execute(self.setup_click_autocompletion, args=tuple([]), msg="Setup Click Completion")
+        self.rename_config_files()
         self.setup_service()
+
+    def rename_config_files(self):
+        path = Path('/etc/sre/autobot.conf')
+        if path.exists():
+            path.rename('/etc/sre/sre.conf')
 
     def setup_service(self):
         pass
@@ -148,9 +154,12 @@ setup(
     #py_modules=['srebot'],
 
     entry_points={
-        'console_scripts': ['autobot=autobot:cli'],
+        'console_scripts': ['sre=srebot:cli'],
     },
     data_files=[
+        "install/sre.conf",
+        "install/sre.service",
+        "install/bot.template.py",
     ],
     install_requires=REQUIRED,
     extras_require=EXTRAS,

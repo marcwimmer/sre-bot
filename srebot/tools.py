@@ -22,7 +22,7 @@ def _raise_error(msg):
 def _get_bots_paths(config):
     bots_paths = []
 
-    for path in config.get('bots-paths', []):
+    for path in config.config.get('bots-paths', []):
         if not path: continue
         path = Path(path)
         for path in path.glob("**/*.py"):
@@ -73,6 +73,9 @@ def _get_robot_file(config, name):
     return filtered[0].absolute()
 
 def kill_proc(proc, timeout):
+    from . import global_data
+    if not global_data['config']:
+        return
     p_sec = 0
     for second in range(timeout):
         if proc.process.poll() is None:
@@ -84,9 +87,26 @@ def kill_proc(proc, timeout):
     config.processes.pop(config.processes.index(proc))
 
 def kill_all_processes():
+    from . import global_data
     timeout_sec = 1
+    if not global_data['config']:
+        return
     for p in global_data['config'].processes:
         kill_proc(p, timeout_sec)
 
 def cleanup():
     kill_all_processes()
+
+def _select_bot_path():
+    from . import global_data
+    config = global_data['config']
+    if not config.config.get('bots-paths'):
+        _raise_error(f"Please configure a path in {config.config_file}")
+    if len(config.config.get('bots-paths')) == 1:
+        return config.config.get('bots-paths')[0]
+    questions = [
+        inquirer.List(name='path', message="Path", choices=config.config['bots-paths']),
+    ]
+    answer = inquirer.prompt(questions)
+    path = answer['path']
+    return path

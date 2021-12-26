@@ -1,3 +1,4 @@
+import os
 from . import global_data
 from pathlib import Path
 import click

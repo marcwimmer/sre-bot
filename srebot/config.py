@@ -8,12 +8,9 @@ import json
 import socket
 
 class Config(object):
-    def __init__(self, log_level='info'):
+    def __init__(self, config_file=None, log_level='info'):
         super().__init__()
-
-        print("""
-        Easily runs observing scripts and publishes to mqtt. Receiving also possible.
-        """)
+        self.config_file = Path(config_file or '/etc/sre/sre.conf')
         self.log_level = log_level or 'info'
         self.current_dir = Path(sys.path[0])
         self.load_config()
@@ -31,7 +28,6 @@ class Config(object):
         self.logger.setLevel(self.log_level)
 
     def load_config(self):
-        self.config_file = Path("/etc/sre/autobot.conf")
         if self.config_file.exists():
             try:
                 config = json.loads(self.config_file.read_text())
@@ -45,7 +41,7 @@ class Config(object):
         self.config = config
 
     def _set_default_values(self):
-        config = json.loads((self.current_dir / 'install' / 'autobot.conf').read_text())
+        config = json.loads((self.current_dir / '..' / 'sre.conf').read_text())
         config.setdefault('bots-paths', [])
         config.setdefault('name', socket.gethostname())
         self.config_file.parent.mkdir(parents=True, exist_ok=True)

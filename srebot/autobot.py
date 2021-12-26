@@ -21,7 +21,7 @@ import click
 from . import cli
 from .config import pass_config
 from .mqtt_tools import PseudoClient
-from .tools import _get_md5, _raise_error, PROC, iterate_scripts, _get_robot_file, kill_proc
+from .tools import _get_md5, _raise_error, PROC, iterate_scripts, _get_robot_file, kill_proc, _select_bot_path
 from . import global_data
 from . mqtt_tools import _get_mqtt_wrapper, _connect_client, _get_regular_client, on_connect
 
@@ -32,11 +32,7 @@ VERSION = '0.2'
 @click.argument("name", required=True)
 @pass_config
 def make_new_file(config, name):
-    questions = [
-        inquirer.List(name='path', message="Path", choices=global_data['config'].config['bots-paths']),
-    ]
-    answer = inquirer.prompt(questions)
-    path = answer['path']
+    path = _select_bot_path()
     if not path:
         return
     for c in " ":
@@ -44,8 +40,9 @@ def make_new_file(config, name):
     dest_path = Path(path) / (name + ".py")
     if dest_path.exists():
         _raise_error(f"Already exists: {dest_path}")
-    template = (config.current_dir / 'install' / 'bot.template.py').read_text()
+    template = (config.current_dir / '..' / 'bot.template.py').read_text()
     dest_path.write_text(template)
+    click.secho(f"Created new bot in {dest_path}", fg='green')
 
 @cli.command(help="Installs all new requirements of bots and installs as a system service.")
 @click.argument("name")
@@ -63,7 +60,7 @@ def make_install(config, name):
         if getattr(mod, 'install', None):
             mod.install()
 
-    name = 'autobot.service'
+    name = 'sre.service'
     install_systemd(name)
 
     paths = ', '.join(config['bots-paths'])
@@ -72,7 +69,7 @@ def make_install(config, name):
     click.secho(f"{config.config_file}:")
     click.secho(config.config_file.read_text())
 
-@cli.command()
+@cli.command(name='list')
 @pass_config
 def list_bots(config):
     for script in iterate_scripts(config):
