@@ -58,7 +58,7 @@ def _get_robot_file(config, name):
     if name and name.startswith("/") or name.startswith("./"):
         name = Path(name).absolute()
     if not name:
-        scripts = list(set(iterate_scripts(config)))
+        scripts = list(sorted(set(iterate_scripts(config))))
         questions = [
             inquirer.List('file', choices=scripts)
         ]
@@ -109,7 +109,7 @@ def _select_bot_path():
     if len(config.config.get('bots-paths')) == 1:
         return config.config.get('bots-paths')[0]
     questions = [
-        inquirer.List(name='path', message="Path", choices=config.config['bots-paths']),
+        inquirer.List(name='path', message="Path", choices=sorted(config.config['bots-paths'])),
     ]
     answer = inquirer.prompt(questions)
     if not answer:
