@@ -107,12 +107,13 @@ class InstallCommand(install):
         self.setup_service()
 
     def rename_config_files(self):
+        # Rename old config file
         path = Path('/etc/sre/autobot.conf')
         if path.exists():
             path.rename('/etc/sre/sre.conf')
 
     def setup_service(self):
-        pass
+        os.system("sre install")
 
     def setup_click_autocompletion(self):
         self.announce("Setting up click autocompletion", level=distutils.log.INFO)
