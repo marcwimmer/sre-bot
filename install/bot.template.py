@@ -5,5 +5,5 @@ def run(client):
     # client.publish('house/bulb1', 'on')
     pass
 
-def on_message(client, userdata, msg):
+def on_message(client, msg, payload=None):
     print(msg.topic)

@@ -115,29 +115,10 @@ def run_iter(config, client, scheduler, module):
                 time.sleep(0.5)
 
         except Exception as ex:
-            config.error(ex)
+            import traceback
+            msg = traceback.format_exc()
+            config.logger.error(msg)
             time.sleep(1)
-
-def run_single_robot(config, script):
-    config.logger.info(f"Starting script at {script}")
-    script = Path(script).absolute()
-    module = load_module(script)
-    if not getattr(module, 'SCHEDULERS', None):
-        return
-
-    config.config['script_file'] = script
-    client = _get_regular_client(config.config['name'], script)
-    client.on_connect = on_connect
-    client.on_message = on_message
-
-    config.logger.info(f"Connecting to {config['broker']}")
-    _connect_client(client)
-
-    for scheduler in module.SCHEDULERS:
-        t = threading.Thread(target=run_iter, args=(config, client, scheduler, module))
-        t.daemon = False
-        t.start()
-    client.loop_forever()
 
 @cli.command(help="Name of script within search directories")
 @click.argument("name")
@@ -147,23 +128,6 @@ def test_bot(config, name):
 
     mod = load_module(name)
     mod.run(PseudoClient())
-
-@cli.command(help="Name of script within search directories")
-@click.argument("name")
-@pass_config
-def run_once(config, name):
-    name = _get_robot_file(config, name)
-    mod = load_module(name)
-    config.config['script_file'] = name
-    reg_client = _get_regular_client(config.config['name'], name)
-    _connect_client(reg_client)
-    client = _get_mqtt_wrapper(reg_client, mod)
-    reg_client.loop_start()
-    mod.run(client)
-    print("Running mqtt for 10 seconds to publish items")
-    time.sleep(10)
-    reg_client.disconnect()
-    reg_client.loop_stop()
 
 @cli.command()
 @click.argument('path', type=click.Path(exists=False))
@@ -176,15 +140,38 @@ def add_bot_path(config, path):
     config.store_config()
 
 @cli.command(help="Start main loop or sub daemon script (called by service usually)")
+@click.option('-1', '--once', required=False, is_flag=True)
 @click.argument('script', required=False)
 @pass_config
-def run(config, script):
-    if script:
-        run_single_robot(config, script)
+def run(config, script, once):
+    script = Path(script).absolute()
+    module = load_module(script)
+    if not getattr(module, 'SCHEDULERS', None):
         return
+    config.logger.info(f"Starting script at {script}")
+    config.config['script_file'] = script
+    client = _get_regular_client(config.config['name'], script)
+    client.on_connect = on_connect
+    client.on_message = on_message
 
-    global_data['config'] = config
+    config.logger.info(f"Connecting to {config.config['broker']}")
+    _connect_client(client)
 
+    for scheduler in module.SCHEDULERS:
+        t = threading.Thread(target=run_iter, args=(config, client, scheduler, module))
+        t.daemon = False
+        t.start()
+        if once:
+            client.loop_start()
+            t.join()
+            client.loop_stop()
+            client.disconnect()
+            return
+    client.loop_forever()
+
+@cli.command(help="Start main loop or sub daemon script (called by service usually)")
+@pass_config
+def daemon(config):
     while True:
         for proc in config.processes:
             if _get_md5(proc.path) != proc.md5:

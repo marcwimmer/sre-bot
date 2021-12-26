@@ -17,6 +17,7 @@ class Config(object):
         self.level = log_level
         self.load_config()
         self.setup_logging()
+        self.bot = False
         atexit.register(cleanup)
 
     def set_log_level(self, level):
