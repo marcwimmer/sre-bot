@@ -222,6 +222,8 @@ def state(config):
             defaults.append(script)
     questions = [inquirer.Checkbox('state', message="Turn on bots", choices=scripts, default=defaults)]
     answer = inquirer.prompt(questions)
+    if not answer:
+        return
 
     disabled = []
     for script in scripts:
