@@ -1,0 +1,3 @@
+[console_scripts]
+autobot = autobot:cli
+

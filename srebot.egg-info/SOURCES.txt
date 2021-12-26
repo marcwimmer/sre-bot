@@ -1,0 +1,12 @@
+README.md
+setup.cfg
+setup.py
+autobot/__init__.py
+autobot/autobot.py
+autobot/config.py
+srebot.egg-info/PKG-INFO
+srebot.egg-info/SOURCES.txt
+srebot.egg-info/dependency_links.txt
+srebot.egg-info/entry_points.txt
+srebot.egg-info/requires.txt
+srebot.egg-info/top_level.txt
