@@ -8,14 +8,15 @@ import json
 import socket
 
 class Config(object):
-    def __init__(self, config_file=None, log_level='info'):
+    def __init__(self, config_file=None, log_level='INFO'):
         super().__init__()
         self.config_file = Path(config_file or '/etc/sre/sre.conf')
-        self.log_level = log_level or 'info'
+        self.log_level = log_level or 'INFO'
         self.current_dir = Path(sys.path[0])
-        self.load_config()
         self.processes = []
-        self.level = 'info'
+        self.level = log_level
+        self.load_config()
+        self.setup_logging()
         atexit.register(cleanup)
 
     def set_log_level(self, level):

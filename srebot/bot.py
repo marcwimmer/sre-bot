@@ -83,10 +83,11 @@ def start_proc(config, path):
 
     process = subprocess.Popen([
         sys.executable,
-        config.current_dir / 'autobot.py',
-        'run',
-        '-s', path,
+        sys.argv[0],
+        '-c', config.config_file,
         '-l', config.log_level,
+        'run',
+        path,
     ])
     md5 = _get_md5(path)
     config = global_data['config']
@@ -154,7 +155,7 @@ def run_iter(config, client, scheduler, module):
             time.sleep(1)
 
 def run_single_robot(config, script):
-    config.info(f"Starting script at {script}")
+    config.logger.info(f"Starting script at {script}")
     script = Path(script).absolute()
     module = load_module(script)
     if not getattr(module, 'SCHEDULERS', None):
@@ -215,7 +216,7 @@ def add_bot_path(config, path):
 @pass_config
 def run(config, script):
     if script:
-        run_single_robot(script)
+        run_single_robot(config, script)
         return
 
     global_data['config'] = config
@@ -225,12 +226,12 @@ def run(config, script):
             if _get_md5(proc.path) != proc.md5:
                 config.logger.info(f"Script was changed, restarting: {proc.path}")
                 kill_proc(proc, 1)
-                start_proc(proc.path)
+                start_proc(config, proc.path)
 
         for script in iterate_scripts(config):
             if not [x for x in config.processes if x.path == script]:
                 config.logger.info(f"Detected new script: {script}")
-                start_proc(script)
+                start_proc(config, script)
 
         for proc in config.processes:
             if not [x for x in list(iterate_scripts(config)) if x == proc.path]:

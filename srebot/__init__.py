@@ -16,4 +16,4 @@ def cli(config, config_file, log_level):
         config.config_file = Path(config_file)
     config.set_log_level(log_level)
 
-from . import autobot
+from . import bot
