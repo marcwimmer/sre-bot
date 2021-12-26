@@ -108,5 +108,7 @@ def _select_bot_path():
         inquirer.List(name='path', message="Path", choices=config.config['bots-paths']),
     ]
     answer = inquirer.prompt(questions)
+    if not answer:
+        return
     path = answer['path']
     return path

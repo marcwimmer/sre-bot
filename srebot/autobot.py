@@ -44,7 +44,7 @@ def make_new_file(config, name):
     dest_path.write_text(template)
     click.secho(f"Created new bot in {dest_path}", fg='green')
 
-@cli.command(help="Installs all new requirements of bots and installs as a system service.")
+@cli.command(name="install", help="Installs all new requirements of bots and installs as a system service.")
 @click.argument("name")
 @pass_config
 def make_install(config, name):
@@ -63,9 +63,9 @@ def make_install(config, name):
     name = 'sre.service'
     install_systemd(name)
 
-    paths = ', '.join(config['bots-paths'])
+    paths = ', '.join(config.config['bots-paths'])
     click.secho(f"Add custom bots in {paths} using autobot.py --new ....", fg='yellow')
-    click.secho(f"I setup following name: {config['name']}.")
+    click.secho(f"I setup following name: {name}.")
     click.secho(f"{config.config_file}:")
     click.secho(config.config_file.read_text())
 
@@ -200,6 +200,16 @@ def run_once(config, name):
     reg_client.disconnect()
     reg_client.loop_stop()
 
+@cli.command()
+@click.argument('path', type=click.Path(exists=False))
+@pass_config
+def add_bot_path(config, path):
+    path = Path(path)
+    path.mkdir(parents=True, exist_ok=True)
+    if path not in config.config['bots-paths']:
+        config.config['bots-paths'].append(str(path))
+    config.store_config()
+
 @cli.command(help="Start main loop or sub daemon script (called by service usually)")
 @click.argument('script', required=False)
 @pass_config
@@ -228,13 +238,3 @@ def run(config, script):
                 kill_proc(proc, 1)
 
         time.sleep(2)
-
-@cli.command()
-@click.argument('path', type=click.Path(exists=False))
-@pass_config
-def add_bot_path(config, path):
-    path = Path(path)
-    path.mkdir(parents=True, exist_ok=True)
-    if path not in config.config['bots-paths']:
-        config.config['bots-paths'].append(str(path))
-    config.store_config()

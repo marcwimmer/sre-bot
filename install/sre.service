@@ -1,8 +1,8 @@
 [Unit]
-Description=SRE Autobot
+Description=SRE Bot
  
 [Service]
-ExecStart=/usr/bin/python3 __path__ --daemon
+ExecStart=__path__ --config-file __config_file__ run --daemon
  
 [Install]
 WantedBy=multi-user.target
