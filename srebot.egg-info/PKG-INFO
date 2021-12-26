@@ -1,0 +1,47 @@
+Metadata-Version: 2.1
+Name: srebot
+Version: 0.0.1
+Summary: Data collector / executor - Site Reliability Framework
+Home-page: https://github.com/marcwimmer/sre-bot
+Author: Marc-Christian Wimmer
+Author-email: marc@itewimmer.de
+License: MIT
+Description: 
+        Remote bot on machines to auto collect data.
+        
+        Virtualenv
+        ============================
+        
+        
+        Capabilities in bots:
+        ============================
+        
+        
+        ```python
+        HOSTNAME = "my-virtual-host1"
+        
+        
+        SCHEDULERS = ["*/10 * * * * *"]
+        
+        def run(client):
+            client.publish('house/bulb5', payload='off', qos=2)
+        
+        def on_message(client, msg, payload=None):
+            ...
+        
+        # optional:
+        def install():
+            pass
+        ```
+        ## How to upload new version
+          * increase version in setup.py
+          * one time: pipenv install twine --dev
+          * pipenv shell
+          * python3 setup.py upload
+        
+        ## install directly
+        
+        pip install git+https://github.com/marcwimmer/gimera
+Platform: UNKNOWN
+Requires-Python: >=3.6.0
+Description-Content-Type: text/markdown
