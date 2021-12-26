@@ -27,6 +27,9 @@ class Config(object):
         self.logger = logging.getLogger('')  # root handler
         self.logger.setLevel(self.log_level)
 
+    def store_config(self):
+        self.config_file.write_text(json.dumps(self.config, indent=4))
+
     def load_config(self):
         if self.config_file.exists():
             try:

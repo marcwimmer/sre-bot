@@ -228,3 +228,13 @@ def run(config, script):
                 kill_proc(proc, 1)
 
         time.sleep(2)
+
+@cli.command()
+@click.argument('path', type=click.Path(exists=False))
+@pass_config
+def add_bot_path(config, path):
+    path = Path(path)
+    path.mkdir(parents=True, exist_ok=True)
+    if path not in config.config['bots-paths']:
+        config.config['bots-paths'].append(str(path))
+    config.store_config()

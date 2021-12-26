@@ -12,9 +12,27 @@ pip install wheel
 pip install sre-bot
 ```
 
+Setup Mosquitto for mqtt
+----------------------------
+```yml
+version: '3'
+services:
+  mosquitto:
+      image: eclipse-mosquitto:1.6
+      ports:
+        - 1883:1883
+      restart: unless-stopped
+```
+
+First steps:
+====================
+```bash
+sre add-bot-path ./bots
+sre new test-bot.py
+```
 
 
-Capabilities in bots:
+Capabilities in bots
 ============================
 
 
