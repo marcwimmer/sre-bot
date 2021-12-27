@@ -67,7 +67,7 @@ def on_message(client, msg, payload=None):
 ### Setup Zabbix
 
 ```javascript
-// mediatype webhook
+// Insert this in the script section of mediatype webhook
 try {
     Zabbix.Log(4, 'Autobot webhook: ' + value);
     var params = JSON.parse(value),
