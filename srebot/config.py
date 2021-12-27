@@ -43,7 +43,10 @@ class Config(object):
         stdout_handler.setFormatter(formatter)
 
     def store_config(self):
-        self.config_file.write_text(json.dumps(self.config, indent=4))
+        self.config_file.write_text(
+            json.dumps(self.config,
+            indent=4)
+        )
 
     def load_config(self):
         if self.config_file.exists():

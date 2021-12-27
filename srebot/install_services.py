@@ -13,7 +13,7 @@ def install_systemd(name):
     config = global_data['config']
     for path in os.getenv("PATH").split(":"):
         subprocess.call(["systemctl", "stop", name])
-        template = (config.current_dir / '..' / name).read_text()
+        template = (config.current_dir / '..' / 'sre-bots' / name).read_text()
 
         # get python environment and executable
         exe = f"'{sys.executable}' '{SRE_CONSOLE}'"
@@ -51,7 +51,7 @@ def install_executable(name):
         name = 'sre.' + name
     path = bin_dir / name
     path.write_text("""#!/bin/bash
-EXE="{exe} {SRE_CONSOLE} --config-file '{config_file}'"
+EXE="{exe} {SRE_CONSOLE} --config-file {config_file}"
 if [[ -z "$@" ]]; then
     $EXE --help
     exit 0
@@ -63,5 +63,5 @@ $EXE "$@"
         script=sys.argv[0],
         SRE_CONSOLE=SRE_CONSOLE,
     ))
-    os.chmod(path, 555)
+    os.chmod(path, 0o555)
     click.secho(f"Installed new executable in {path}", fg='green')

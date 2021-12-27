@@ -179,10 +179,11 @@ setup(
     #py_modules=['srebot'],
 
     data_files=[
-        'datafiles/sre.service',
-        'datafiles/bot.template.py',
-        'datafiles/bot.template.py',
-    ],
+        ('sre-bots', [
+            'datafiles/sre.service',
+            'datafiles/bot.template.py'
+        ])
+        ],
     entry_points={
         'console_scripts': ['sre-console=srebot:cli'],
     },

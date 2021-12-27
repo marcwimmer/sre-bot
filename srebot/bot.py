@@ -40,7 +40,7 @@ def make_new_file(config, name):
     dest_path = Path(path) / (name + ".py")
     if dest_path.exists():
         _raise_error(f"Already exists: {dest_path}")
-    template = (config.current_dir / 'install' / 'bot.template.py').read_text()
+    template = (config.current_dir / '..' / 'sre-bots' / 'bot.template.py').read_text()
     dest_path.write_text(template)
     click.secho(f"Created new bot in {dest_path}", fg='green')
 
@@ -139,7 +139,7 @@ def test_bot(config, name):
 @click.argument('path', type=click.Path(exists=False))
 @pass_config
 def add_bot_path(config, path):
-    path = Path(path)
+    path = Path(path).absolute()
     path.mkdir(parents=True, exist_ok=True)
     if str(path) not in config.config['bots-paths']:
         config.config['bots-paths'].append(str(path))
@@ -169,7 +169,16 @@ def run(config, script, once, kill_others):
     client.on_message = on_message
 
     config.logger.info(f"Connecting to {config.config['broker']}")
-    _connect_client(client)
+
+    while True:
+        try:
+            _connect_client(client)
+        except Exception as ex:
+            msg = traceback.format_exc()
+            config.logger.error(msg)
+            time.sleep(1)
+        else:
+            break
 
     for scheduler in module.SCHEDULERS:
         if once:
