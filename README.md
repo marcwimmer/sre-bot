@@ -64,6 +64,35 @@ def on_message(client, msg, payload=None):
 
 ## Example: Zabbix Trigger
 
+### Setup Zabbix
+
+```javascript
+// mediatype webhook
+try {
+    Zabbix.Log(4, 'Autobot webhook: ' + value);
+    var params = JSON.parse(value),
+        req = new CurlHttpRequest(),
+        resp;
+    if (params.HTTPProxy) {
+        req.setProxy(params.HTTPProxy);
+    }
+    req.AddHeader('Content-Type: application/html');
+    resp = req.Post(params.URL, JSON.stringify(params));
+    if (req.Status() != 200) {
+        throw 'Response code: ' + req.Status();
+    }
+    return true;
+}
+catch (error) {
+    Zabbix.Log(3, error);
+    throw 'Failed with error: ' + error;
+}
+
+```
+![image](README_files/zabbix_webhook_trigger1.png)
+
+
+### Bot
 ```python
 import json
 
