@@ -39,7 +39,7 @@ sre new test-bot.py
 ```
 # Bot
 
-  * ```sre new my-bot1``
+  * `sre new my-bot1`
 
 ```python
 HOSTNAME = "my-virtual-host1"   # optional otherwise configured default host
