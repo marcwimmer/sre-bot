@@ -56,7 +56,7 @@ class Config(object):
         self.config = config
 
     def _set_default_values(self):
-        config = json.loads((self.current_dir / '..' / 'sre.conf').read_text())
+        config = json.loads((self.current_dir / 'install' / 'sre.conf').read_text())
         config.setdefault('bots-paths', [])
         config.setdefault('name', socket.gethostname())
         self.config_file.parent.mkdir(parents=True, exist_ok=True)

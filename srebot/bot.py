@@ -40,7 +40,7 @@ def make_new_file(config, name):
     dest_path = Path(path) / (name + ".py")
     if dest_path.exists():
         _raise_error(f"Already exists: {dest_path}")
-    template = (config.current_dir / '..' / 'bot.template.py').read_text()
+    template = (config.current_dir / 'install' / 'bot.template.py').read_text()
     dest_path.write_text(template)
     click.secho(f"Created new bot in {dest_path}", fg='green')
 
@@ -141,7 +141,7 @@ def test_bot(config, name):
 def add_bot_path(config, path):
     path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
-    if path not in config.config['bots-paths']:
+    if str(path) not in config.config['bots-paths']:
         config.config['bots-paths'].append(str(path))
     config.store_config()
 
