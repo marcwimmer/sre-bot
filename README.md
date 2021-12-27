@@ -89,6 +89,7 @@ catch (error) {
 }
 
 ```
+
 ![image](README_files/zabbix_webhook_trigger1.png)
 
 
