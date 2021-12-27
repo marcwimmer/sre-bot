@@ -91,6 +91,10 @@ catch (error) {
 ```
 
 ![image](README_files/zabbix_webhook_trigger1.png)
+![image](README_files/zabbix_webhook_trigger2.png)
+![image](README_files/zabbix_webhook_trigger_user.png)
+![image](README_files/zabbix_webhook_trigger_media.png)
+![image](README_files/zabbix_message_templates.png)
 
 
 ### Make a new bot
