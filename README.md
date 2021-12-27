@@ -37,7 +37,7 @@ sre new test-bot.py
     "http_port": 8520,
 }
 ```
-# Bot
+# Making a new bot
 
   * `sre new my-bot1`
 
