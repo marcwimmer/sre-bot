@@ -5,6 +5,7 @@
 #   $ pipenv install twine --dev
 
 import io
+from glob import glob
 import os
 import sys
 import tempfile
@@ -157,11 +158,6 @@ setup(
     entry_points={
         'console_scripts': ['sre=srebot:cli'],
     },
-    data_files=[
-        "install/sre.conf",
-        "install/sre.service",
-        "install/bot.template.py",
-    ],
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
