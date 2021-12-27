@@ -7,6 +7,8 @@ import subprocess
 from importlib import import_module
 import importlib.util
 
+SRE_CONSOLE = "/usr/local/bin/sre-console"
+
 def install_systemd(name):
     config = global_data['config']
     for path in os.getenv("PATH").split(":"):
@@ -14,12 +16,12 @@ def install_systemd(name):
         template = (config.current_dir / '..' / name).read_text()
 
         # get python environment and executable
-        exe = sys.executable + " " + sys.argv[0]
+        exe = f"'{sys.executable}' '{SRE_CONSOLE}'"
         template = template.replace('__path__', exe)
         template = template.replace('__config_file__', str(config.config_file))
         path = (Path("/etc/systemd/system/") / name)
         path.write_text(template)
-        click.secho(path, fg='yellow')
+        click.secho(str(path), fg='yellow')
         subprocess.check_call(["/bin/systemctl", "daemon-reload"])
         subprocess.check_call(["/bin/systemctl", "enable", name])
         subprocess.check_call(["/bin/systemctl", "restart", name])
@@ -49,11 +51,17 @@ def install_executable(name):
         name = 'sre.' + name
     path = bin_dir / name
     path.write_text("""#!/bin/bash
-{exe} {script} --config-file '{config_file}' "$@"
-    """.format(
+EXE="{exe} {SRE_CONSOLE} --config-file '{config_file}'"
+if [[ -z "$@" ]]; then
+    $EXE --help
+    exit 0
+fi
+$EXE "$@"
+""".format(
         config_file=global_data['config'].config_file,
         exe=sys.executable,
         script=sys.argv[0],
+        SRE_CONSOLE=SRE_CONSOLE,
     ))
     os.chmod(path, 555)
     click.secho(f"Installed new executable in {path}", fg='green')

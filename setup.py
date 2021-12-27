@@ -136,7 +136,8 @@ class InstallCommand(install):
             }, indent=4))
 
     def setup_service(self):
-        os.system("sre install")
+        print("Install bot as a service with 'sre install'")
+        print("Pick a name for the bot service if you run several bots.")
 
     def setup_click_autocompletion(self):
         self.announce("Setting up click autocompletion", level=distutils.log.INFO)
@@ -177,8 +178,13 @@ setup(
     # If your package is a single module, use this instead of 'packages':
     #py_modules=['srebot'],
 
+    data_files=[
+        'datafiles/sre.service',
+        'datafiles/bot.template.py',
+        'datafiles/bot.template.py',
+    ],
     entry_points={
-        'console_scripts': ['sre=srebot:cli'],
+        'console_scripts': ['sre-console=srebot:cli'],
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,

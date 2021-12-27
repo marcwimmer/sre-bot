@@ -2,7 +2,7 @@
 Description=SRE Bot
 
 [Service]
-ExecStart=__path__ --config-file __config_file__ daemon
+ExecStart=__path__ --config-file '__config_file__' daemon
 
 [Install]
 WantedBy=multi-user.target
