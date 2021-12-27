@@ -186,6 +186,7 @@ def run(config, script, once, kill_others):
 @cli.command(help="Start main loop or sub daemon script (called by service usually)")
 @pass_config
 def daemon(config):
+    config.logger.info("Starting daemon...")
     t = threading.Thread(target=start_webserver,)
     t.daemon = True
     t.start()

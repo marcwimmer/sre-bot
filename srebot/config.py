@@ -24,16 +24,19 @@ class Config(object):
         self.level = level
 
     def setup_logging(self):
-        FORMAT = '[%(levelname)s] %(name) -12s %(asctime)s %(message)s'
+        FORMAT = '[%(levelname)s] %(asctime)s %(message)s'
         formatter = logging.Formatter(FORMAT)
         logging.basicConfig(format=FORMAT)
         self.logger = logging.getLogger('')  # root handler
         self.logger.setLevel(self.log_level)
 
         if self.config.get('log_file'):
-            output_file_handler = logging.FileHandler(self.config.get("log_file"))
+            log_file = Path(self.config.get('log_file'))
+            log_file.parent.mkdir(exist_ok=True, parents=True)
+            output_file_handler = logging.FileHandler(log_file)
             output_file_handler.setFormatter(formatter)
             self.logger.addHandler(output_file_handler)
+            del log_file
 
         stdout_handler = logging.StreamHandler(sys.stdout)
         self.logger.addHandler(stdout_handler)

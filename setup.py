@@ -5,8 +5,10 @@
 #   $ pipenv install twine --dev
 
 import io
+import json
 from glob import glob
 import os
+import socket
 import sys
 import tempfile
 import shutil
@@ -105,6 +107,7 @@ class InstallCommand(install):
         install.run(self)
         self.execute(self.setup_click_autocompletion, args=tuple([]), msg="Setup Click Completion")
         self.rename_config_files()
+        self.make_default_config()
         self.setup_service()
 
     def rename_config_files(self):
@@ -112,6 +115,25 @@ class InstallCommand(install):
         path = Path('/etc/sre/autobot.conf')
         if path.exists():
             path.rename('/etc/sre/sre.conf')
+
+    def make_default_config(self):
+        path = Path('/etc/sre/sre.conf')
+        if not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps({
+                "bots-paths": [
+                ],
+                "broker": {
+                    "ip": "127.0.0.1",
+                    "port": 1883,
+                },
+                "name": socket.gethostname(),
+                "log_level": "info",
+                "log_file": "/var/log/sre/sre.log",
+                # used for webhook trigger
+                "http_address": "0.0.0.0",
+                "http_port": 8520,
+            }, indent=4))
 
     def setup_service(self):
         os.system("sre install")
