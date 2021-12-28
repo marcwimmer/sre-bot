@@ -51,12 +51,10 @@ def install_executable(name):
         name = 'sre.' + name
     path = bin_dir / name
     path.write_text("""#!/bin/bash
-EXE="{exe} {SRE_CONSOLE} --config-file {config_file}"
 if [[ -z "$@" ]]; then
-    $EXE --help
-    exit 0
+    set -- "--help"
 fi
-$EXE "$@"
+{exe} {SRE_CONSOLE} --config-file {config_file} "$@"
 """.format(
         config_file=global_data['config'].config_file,
         exe=sys.executable,
