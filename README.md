@@ -126,18 +126,3 @@ services:
 ## install directly
 
 pip3 install git+https://github.com/marcwimmer/sre-bot
-
-## How to upload new version
-
-* increase version in setup.py
-
-* one time: pipenv install twine --dev
-
-```bash
-pipenv shell
-pip install build
-rm dist -Rf
-python -m build
-twine upload dist/*
-exit
-```
