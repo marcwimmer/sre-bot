@@ -1,3 +1,0 @@
-[console_scripts]
-sre-bot = srebot:cli
-
