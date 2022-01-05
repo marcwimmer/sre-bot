@@ -1,6 +1,9 @@
-Remote bot on machines to auto collect data.
+# Remote bot on machines to auto collect data *
 
-# Setup
+* collect data
+* execute triggers
+
+## Setup
 
 Recommended way is to use a virtual-env like:
 
@@ -11,7 +14,8 @@ pip install wheel
 pip install sre-bot
 ```
 
-## First steps:
+## First steps
+
 ```bash
 sre add-bot-path ./bots
 sre new test-bot.py
@@ -37,9 +41,10 @@ sre new test-bot.py
     "http_port": 8520,
 }
 ```
-# Making a new bot
 
-  * `sre new my-bot1`
+## Making a new bot
+
+* `sre new my-bot1`
 
 ```python
 HOSTNAME = "my-virtual-host1"   # optional otherwise configured default host
@@ -55,12 +60,10 @@ def on_message(client, msg, payload=None):
 
 ```
 
+## Calling a webhook
 
-# Calling a webhook
-
-  * call http://address:port/trigger/mymachine/restart and a msg with topic "mymachine/restart" is sent
-  * useful together with zabbix
-
+* call http://address:port/trigger/mymachine/restart and a msg with topic "mymachine/restart" is sent
+* useful together with zabbix
 
 ## Example: Zabbix Trigger
 
@@ -96,8 +99,8 @@ catch (error) {
 ![image](README_files/zabbix_webhook_trigger_media.png)
 ![image](README_files/zabbix_message_templates.png)
 
-
 ### Make a new bot
+
 ```python
 import json
 
@@ -108,7 +111,7 @@ def on_message(client, msg, payload=None):
             client.publish("restart_queuejobs")
 ```
 
-# Example: Setup Mosquitto for mqtt with docker
+## Example: Setup Mosquitto for mqtt with docker
 
 ```yml
 version: '3'
@@ -120,13 +123,21 @@ services:
       restart: unless-stopped
 ```
 
-
-# How to upload new version
-  * increase version in setup.py
-  * one time: pipenv install twine --dev
-  * pipenv shell
-  * python3 setup.py upload
-
-# install directly
+## install directly
 
 pip3 install git+https://github.com/marcwimmer/sre-bot
+
+## How to upload new version
+
+* increase version in setup.py
+
+* one time: pipenv install twine --dev
+
+```bash
+pipenv shell
+pip install build
+rm dist -Rf
+python -m build
+twine upload dist/*
+exit
+```

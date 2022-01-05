@@ -1,3 +1,3 @@
 [console_scripts]
-autobot = autobot:cli
+sre-bot = srebot:cli
 

@@ -10,29 +10,24 @@ from glob import glob
 import os
 import socket
 import sys
-import tempfile
-import shutil
-import distutils
+import subprocess
 from shutil import rmtree
 from pathlib import Path
 
+from setuptools.config import read_configuration
 from setuptools import find_packages, setup, Command
 from setuptools.command.install import install
-from subprocess import check_call, check_output
+setup_cfg = read_configuration("setup.cfg")
+metadata = setup_cfg['metadata']
+
+NAME = metadata['name']
 
 # Package meta-data.
-NAME = 'sre-bot'
-DESCRIPTION = 'Data collector / executor - Site Reliability Framework'
-URL = 'https://github.com/marcwimmer/sre-bot'
-EMAIL = 'marc@itewimmer.de'
-AUTHOR = 'Marc-Christian Wimmer'
-REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.0.3'
-
 # What packages are required for this module to be executed?
 REQUIRED = [
     "wheel", "simplejson",
-    "paho-mqtt", "click", "croniter", "arrow", "pudb", "pathlib", "pyyaml", "inquirer"
+    "paho-mqtt", "click", "croniter", "arrow", "pudb", "pathlib", "pyyaml", "inquirer",
+    "click-completion-helper"
 ]
 
 # What packages are optional?
@@ -53,16 +48,16 @@ try:
     with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
         long_description = '\n' + f.read()
 except FileNotFoundError:
-    long_description = DESCRIPTION
+    long_description = metadata['DESCRIPTION']
 
 # Load the package's __version__.py module as a dictionary.
 about = {}
-if not VERSION:
+if not metadata['version']:
     project_slug = NAME.lower().replace("-", "_").replace(" ", "_")
     with open(os.path.join(here, project_slug, '__version__.py')) as f:
         exec(f.read(), about)
 else:
-    about['__version__'] = VERSION
+    about['__version__'] = metadata['version']
 
 
 class UploadCommand(Command):
@@ -113,8 +108,11 @@ class InstallCommand(install):
     def rename_config_files(self):
         # Rename old config file
         path = Path('/etc/sre/autobot.conf')
-        if path.exists():
-            path.rename('/etc/sre/sre.conf')
+        try:
+            if path.exists():
+                path.rename('/etc/sre/sre.conf')
+        except:
+            pass
 
     def make_default_config(self):
         path = Path('/etc/sre/sre.conf')
@@ -140,40 +138,22 @@ class InstallCommand(install):
         print("Pick a name for the bot service if you run several bots.")
 
     def setup_click_autocompletion(self):
-        self.announce("Setting up click autocompletion", level=distutils.log.INFO)
+        for console_script in setup_cfg['options']['entry_points']['console_scripts']:
+            console_call = console_script.split("=")[0].strip()
 
-        def setup_for_bash():
-            path = Path("/etc/bash_completion.d")
-            done_bash = False
-            if path.exists():
-                if os.access(path, os.W_OK):
-                    os.system(f"_{NAME.upper()}_COMPLETE=bash_source {NAME} > '{path / NAME}'")
-                    done_bash = True
-            if not done_bash:
-                if not (path / NAME).exists():
-                    bashrc = Path(os.path.expanduser("~")) / '.bashrc'
-                    complete_file = bashrc.parent / f'.{NAME}-completion.sh'
-                    os.system(f"_{NAME.upper()}_COMPLETE=bash_source {NAME} > '{complete_file}'")
-                    if complete_file.name not in bashrc.read_text():
-                        content = bashrc.read_text()
-                        content += '\nsource ' + complete_file.name
-                        bashrc.write_text(content)
-        setup_for_bash()
-
-class UninstallCommand(install):
-    def run(self):
-        install.run(self)
+            try:
+                subprocess.run([
+                    "click-completion-helper",
+                    "setup",
+                    console_call,
+                ])
+            except:
+                pass
 
 setup(
-    name=NAME,
     version=about['__version__'],
-    description=DESCRIPTION,
     long_description=long_description,
     long_description_content_type='text/markdown',
-    author=AUTHOR,
-    author_email=EMAIL,
-    python_requires=REQUIRES_PYTHON,
-    url=URL,
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     # If your package is a single module, use this instead of 'packages':
     #py_modules=['srebot'],
@@ -184,9 +164,6 @@ setup(
             'datafiles/bot.template.py'
         ])
         ],
-    entry_points={
-        'console_scripts': ['sre-console=srebot:cli'],
-    },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
@@ -195,6 +172,5 @@ setup(
     cmdclass={
         'upload': UploadCommand,
         'install': InstallCommand,
-        'uninstall': UninstallCommand,
     },
 )

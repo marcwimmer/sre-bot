@@ -1,8 +1,11 @@
-arrow
+wheel
+simplejson
+paho-mqtt
 click
 croniter
-inquirer
-paho-mqtt
-pathlib
+arrow
 pudb
+pathlib
 pyyaml
+inquirer
+click-completion-helper
