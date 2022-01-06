@@ -53,7 +53,7 @@ class Config(object):
             try:
                 config = json.loads(self.config_file.read_text())
             except Exception as ex:
-                _raise_error("config file corrupt:\n\n{ex}\n\n" + self.config_file.read_text())
+                _raise_error(f"config file corrupt:\n\n{ex}\n\n" + self.config_file.read_text())
         else: config = {}
 
         self._set_default_values(config)
