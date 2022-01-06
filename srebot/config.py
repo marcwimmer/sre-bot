@@ -56,13 +56,10 @@ class Config(object):
                 _raise_error("config file corrupt:\n\n" + self.config_file.read_text())
         else: config = {}
 
-        if not config.get('name'):
-            self._set_default_values()
-            self.load_config()
+        self._set_default_values(config)
         self.config = config
 
-    def _set_default_values(self):
-        config = json.loads((self.current_dir / 'install' / 'sre.conf').read_text())
+    def _set_default_values(self, config):
         config.setdefault('bots-paths', [])
         config.setdefault('name', socket.gethostname())
         self.config_file.parent.mkdir(parents=True, exist_ok=True)

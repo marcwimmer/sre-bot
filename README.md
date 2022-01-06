@@ -43,7 +43,7 @@ sre new test-bot.py
     },
     "name": "myhost1",
     "log_level": "error"
-    "log_file": "/var/log/sre/.log",
+    "log_file": "/var/log/sre/sre.log",
     # used for webhook trigger
     "http_address": "0.0.0.0",
     "http_port": 8520,
