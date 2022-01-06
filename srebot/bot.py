@@ -72,8 +72,7 @@ def list_bots(config):
 def start_proc(config, path):
     config.logger.info(f"Starting {path}...")
     path = path.absolute()
-
-    os.system(f"pkill -9 -f '{path}'")
+    os.system(f"pkill -9 -f '{sys.executable} .*{path}'")
 
     process = subprocess.Popen([
         sys.executable,
@@ -146,17 +145,16 @@ def add_bot_path(config, path):
 
 @cli.command(help="Start main loop or sub daemon script (called by service usually)")
 @click.option('-1', '--once', required=False, is_flag=True)
-@click.option('-k', '--kill-others', required=False, is_flag=True, help="If set then running processes are tried to stop.")
 @click.argument('script', required=False)
 @pass_config
-def run(config, script, once, kill_others):
+def run(config, script, once):
     if not script:
         script = _get_robot_file(config, '')
     if not str(script).startswith('/'):
         _raise_error("Needs absolute path if killing existing script")
 
-    if kill_others:
-        os.system(f"pkill -9 -f '{sys.executable}.*{sys.argv[0]}.*{script}'")
+    #if kill_others:
+    #    os.system(f"pkill -9 -f '{sys.executable}.*{sys.argv[0]}.*{script}'")
     script = Path(script).absolute()
     module = load_module(script)
     if not getattr(module, 'SCHEDULERS', None):
