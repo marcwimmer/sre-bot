@@ -58,6 +58,7 @@ class Config(object):
     def _set_default_values(self, config):
         config.setdefault('bots-paths', [])
         config.setdefault('name', socket.gethostname())
+        config.setdefault('log_level', 'info')
         self.config_file.parent.mkdir(parents=True, exist_ok=True)
         self.config_file.write_text(json.dumps(config, indent=4))
 

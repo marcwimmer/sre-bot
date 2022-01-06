@@ -78,7 +78,7 @@ def start_proc(config, path):
         sys.executable,
         sys.argv[0],
         '-c', config.config_file,
-        '-l', config.log_level,
+        '-l', config.config.get('log_level'),
         'run',
         path,
     ])
