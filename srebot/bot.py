@@ -137,6 +137,7 @@ def test_bot(config, name):
 @click.argument('path', type=click.Path(exists=False))
 @pass_config
 def add_bot_path(config, path):
+    path = path.strip()
     path = Path(path).absolute()
     path.mkdir(parents=True, exist_ok=True)
     if str(path) not in config.config['bots-paths']:
