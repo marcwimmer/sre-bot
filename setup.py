@@ -30,7 +30,7 @@ NAME = metadata['name']
 # What packages are required for this module to be executed?
 REQUIRED = [
     "simplejson",
-    "paho-mqtt", "click", "croniter", "arrow", "pudb", "pathlib", "pyyaml", "inquirer",
+    "paho-mqtt", "click>=8.0.3", "croniter", "arrow", "pudb", "pathlib", "pyyaml", "inquirer",
     "click-completion-helper"
 ]
 
