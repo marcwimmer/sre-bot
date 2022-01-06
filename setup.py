@@ -152,12 +152,8 @@ class InstallCommand(install):
         for console_script in setup_cfg['options']['entry_points']['console_scripts']:
             console_call = console_script.split("=")[0].strip()
 
-            # if click completion helper is fresh installed and not available now
-            subprocess.run([
-                "click-completion-helper",
-                "setup",
-                console_call,
-            ])
+            subprocess.run(["pip3", "install", "click-completion-helper", "--no-binary=click-completion-helper"])
+            subprocess.run([ "click-completion-helper", "setup", console_call])
 
     def install_executable(self, conf_file):
         for console_script in setup_cfg['options']['entry_points']['console_scripts']:
@@ -172,6 +168,7 @@ class InstallCommand(install):
             bin.write_text(template)
             os.chmod(bin, 0o555)
 
+            subprocess.run(["pip3", "install", "click-completion-helper", "--no-binary=click-completion-helper"])
             subprocess.run(['click-completion-helper', 'setup', bin.name])
             break # only one console supported
 
