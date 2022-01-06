@@ -14,6 +14,5 @@ def cli(config, config_file, log_level):
     global_data['config'] = config
     if config_file:
         config.config_file = Path(config_file)
-    config.set_log_level(log_level)
 
 from . import bot

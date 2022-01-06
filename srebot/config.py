@@ -8,27 +8,23 @@ import json
 import socket
 
 class Config(object):
-    def __init__(self, config_file=None, log_level='INFO'):
+    def __init__(self, config_file=None):
         super().__init__()
         self.config_file = Path(config_file or '/etc/sre/sre.conf')
-        self.log_level = log_level or 'INFO'
         self.current_dir = Path(sys.path[0])
         self.processes = []
-        self.level = log_level
         self.load_config()
         self.setup_logging()
         self.bot = False
         atexit.register(cleanup)
 
-    def set_log_level(self, level):
-        self.level = level
-
     def setup_logging(self):
+        log_level = (self.config.get('log_level') or 'INFO').upper()
         FORMAT = '[%(levelname)s] %(asctime)s %(message)s'
         formatter = logging.Formatter(FORMAT)
         logging.basicConfig(format=FORMAT)
         self.logger = logging.getLogger('')  # root handler
-        self.logger.setLevel(self.log_level)
+        self.logger.setLevel(log_level)
 
         if self.config.get('log_file'):
             log_file = Path(self.config.get('log_file'))
