@@ -134,7 +134,7 @@ def _onetime_client(name_appendix, script, timeout=10):
     def on_publish(client, userdata, mid):
         data['stop'] = True
 
-    client = _get_regular_client(name_appendix=name_appendix, scriptfile=script)
+    client = _get_regular_client(name=name_appendix, scriptfile=script)
     client.on_publish = on_publish
     _connect_client(client)
     yield client
