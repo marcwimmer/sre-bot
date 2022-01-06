@@ -173,8 +173,6 @@ setup(
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
-    license='MIT',
-    # $ setup.py publish support.
     cmdclass={
         'upload': UploadCommand,
         'install': InstallCommand,
