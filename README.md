@@ -14,6 +14,10 @@ pip install wheel
 pip install sre-bot
 ```
 
+### Completion for user root in bash
+
+Per default ubuntu deactivates ~/.bashrc bash-completion. Uncomment the lines please.
+
 ## First steps
 
 ```bash
