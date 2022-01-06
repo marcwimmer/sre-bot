@@ -157,8 +157,6 @@ def run(config, script, once):
     #    os.system(f"pkill -9 -f '{sys.executable}.*{sys.argv[0]}.*{script}'")
     script = Path(script).absolute()
     module = load_module(script)
-    if not getattr(module, 'SCHEDULERS', None):
-        return
     config.logger.info(f"Starting script at {script}")
     config.bot = script
     client = _get_regular_client(config.config['name'], script)
@@ -177,7 +175,7 @@ def run(config, script, once):
         else:
             break
 
-    for scheduler in module.SCHEDULERS:
+    for scheduler in getattr(module, 'SCHEDULERS', []):
         if once:
             with _onetime_client('_run_once') as client:
                 run_iter(config, client, scheduler, module, once=True)
