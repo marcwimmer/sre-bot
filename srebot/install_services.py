@@ -9,12 +9,11 @@ import importlib.util
 
 def _get_exe(config, name, path_to_sre):
     # get python environment and executable
+    options = f" --config-file '{config.config_file}' daemon"
     if os.getenv("VIRTUAL_ENV"):
-        ExecStart=f"/bin/sh -c 'cd \\'{os.getenv('VIRTUAL_ENV')}\\' && . bin/activate && python3 \\'{path_to_sre}\\'"
+        ExecStart = f"/bin/sh -c 'cd \\'{os.getenv('VIRTUAL_ENV')}\\' && . bin/activate && python3 \\'{path_to_sre}\\' {options}"
     else:
-        ExecStart = f"'{sys.executable}' '{path_to_sre}'"
-
-    ExecStart += f" --config-file '{config.config_file}' daemon'"
+        ExecStart = f"'{sys.executable}' '{path_to_sre}' {options}"
     return ExecStart
 
 def install_systemd(name, path_to_sre):
