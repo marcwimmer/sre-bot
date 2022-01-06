@@ -12,6 +12,9 @@ python3 -m venv /var/lib/sre-bot
 . /var/lib/sre-bot/bin/activate
 pip install wheel
 pip install sre-bot
+
+# to install systemd service
+sre install
 ```
 
 ### Completion for user root in bash
@@ -21,7 +24,6 @@ Per default ubuntu deactivates ~/.bashrc bash-completion. Uncomment the lines pl
 ## First steps
 
 ```bash
-sre install-service
 sre add-bot-path ./bots
 sre new test-bot.py
 ```
