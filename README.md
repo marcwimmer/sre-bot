@@ -17,6 +17,7 @@ pip install sre-bot
 ## First steps
 
 ```bash
+sre install-service
 sre add-bot-path ./bots
 sre new test-bot.py
 ```

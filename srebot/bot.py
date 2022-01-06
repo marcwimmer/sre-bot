@@ -50,18 +50,15 @@ def make_new_file(config, name):
 def make_install(config, name):
     from . install_services import install_systemd
     from . install_services import install_requirements
-    from . install_services import install_executable
     config = global_data['config']
 
     install_requirements()
-    install_executable(name)
     if not name.endswith('.service'):
         name = name + ".service"
-    install_systemd(name)
+    install_systemd(name, sys.argv[0])
 
     paths = ', '.join(config.config['bots-paths'])
-    click.secho(f"Add custom bots in {paths} using: name new bot1", fg='yellow')
-    click.secho(f"I setup following name: {name}.")
+    click.secho(f"Add custom bots: {name} new bot1", fg='yellow')
     click.secho(f"{config.config_file}:")
     click.secho(config.config_file.read_text())
 

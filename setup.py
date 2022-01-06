@@ -20,12 +20,16 @@ from setuptools.command.install import install
 setup_cfg = read_configuration("setup.cfg")
 metadata = setup_cfg['metadata']
 
+# HACK to ignore wheel building from pip and just to source distribution
+if 'bdist_wheel' in sys.argv:
+    sys.exit(0)
+
 NAME = metadata['name']
 
 # Package meta-data.
 # What packages are required for this module to be executed?
 REQUIRED = [
-    "wheel", "simplejson",
+    "simplejson",
     "paho-mqtt", "click", "croniter", "arrow", "pudb", "pathlib", "pyyaml", "inquirer",
     "click-completion-helper"
 ]
@@ -88,7 +92,7 @@ class UploadCommand(Command):
     def run(self):
         self.clear_builds()
 
-        self.status('Building Source and Wheel (universal) distribution…')
+        self.status('Building Source distribution…')
         os.system('{0} setup.py sdist'.format(sys.executable))
 
         self.status('Uploading the package to PyPI via Twine…')
@@ -106,10 +110,12 @@ class InstallCommand(install):
     """Post-installation for installation mode."""
     def run(self):
         install.run(self)
+        conf_file = Path('/etc/sre/sre.conf')
         self.execute(self.setup_click_autocompletion, args=tuple([]), msg="Setup Click Completion")
         self.rename_config_files()
-        self.make_default_config()
+        self.make_default_config(conf_file)
         self.setup_service()
+        self.install_executable(conf_file)
 
     def rename_config_files(self):
         # Rename old config file
@@ -120,11 +126,10 @@ class InstallCommand(install):
         except:
             pass
 
-    def make_default_config(self):
-        path = Path('/etc/sre/sre.conf')
-        if not path.exists():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps({
+    def make_default_config(self, conf_file):
+        if not conf_file.exists():
+            conf_file.parent.mkdir(parents=True, exist_ok=True)
+            conf_file.write_text(json.dumps({
                 "bots-paths": [
                 ],
                 "broker": {
@@ -147,14 +152,28 @@ class InstallCommand(install):
         for console_script in setup_cfg['options']['entry_points']['console_scripts']:
             console_call = console_script.split("=")[0].strip()
 
-            try:
-                subprocess.run([
-                    "click-completion-helper",
-                    "setup",
-                    console_call,
-                ])
-            except:
-                pass
+            # if click completion helper is fresh installed and not available now
+            subprocess.run([
+                "click-completion-helper",
+                "setup",
+                console_call,
+            ])
+
+    def install_executable(self, conf_file):
+        for console_script in setup_cfg['options']['entry_points']['console_scripts']:
+            console_call = console_script.split("=")[0].strip()
+
+            orig_file = Path(self.__dict__['install_scripts']) / console_call
+            template = orig_file.read_text().split("\n")[1:]
+            template = ["#!" + sys.executable] + template
+            template = '\n'.join(template)
+
+            bin = Path("/usr/local/bin/sre")
+            bin.write_text(template)
+            os.chmod(bin, 0o555)
+
+            subprocess.run(['click-completion-helper', 'setup', bin.name])
+            break # only one console supported
 
 setup(
     version=about['__version__'],
@@ -163,13 +182,9 @@ setup(
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     # If your package is a single module, use this instead of 'packages':
     #py_modules=['srebot'],
-
-    data_files=[
-        ('sre-bots', [
-            'datafiles/sre.service',
-            'datafiles/bot.template.py'
-        ])
-        ],
+    package_data={
+        "": ["datafiles/*"],
+    },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
