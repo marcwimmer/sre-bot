@@ -40,7 +40,8 @@ def make_new_file(config, name):
     dest_path = Path(path) / (name + ".py")
     if dest_path.exists():
         _raise_error(f"Already exists: {dest_path}")
-    template = (config.current_dir / '..' / 'sre-bots' / 'bot.template.py').read_text()
+    import srebot
+    template = (Path(srebot.__file__).parent / 'datafiles' / 'bot.template.py').read_text()
     dest_path.write_text(template)
     click.secho(f"Created new bot in {dest_path}", fg='green')
 

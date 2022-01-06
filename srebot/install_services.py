@@ -7,16 +7,25 @@ import subprocess
 from importlib import import_module
 import importlib.util
 
+def _get_exe(config, name, path_to_sre):
+    # get python environment and executable
+    if os.getenv("VIRTUAL_ENV"):
+        ExecStart=f"/bin/sh -c 'cd \\'{os.getenv('VIRTUAL_ENV')}\\' && . bin/activate && python3 \\'{path_to_sre}\\'"
+    else:
+        ExecStart = f"'{sys.executable}' '{path_to_sre}'"
+
+    ExecStart += f" --config-file '{config.config_file}' daemon'"
+    return ExecStart
+
 def install_systemd(name, path_to_sre):
     config = global_data['config']
     subprocess.call(["systemctl", "stop", name])
-    template = (config.current_dir / '..' / 'sre-bots' / name).read_text()
+    import srebot
+    template = (Path(srebot.__file__).parent / 'datafiles' / 'sre.service').read_text()
+    ExecStart = _get_exe(config, name, path_to_sre)
 
-    # get python environment and executable
-    exe = f"'{sys.executable}' '{path_to_sre}'"
-    template = template.replace('__path__', exe)
+    template = template.replace('__exec_start__', ExecStart)
     template = template.replace('__name__', name)
-    template = template.replace('__config_file__', str(config.config_file))
     path = (Path("/etc/systemd/system/") / name)
     if path.exists():
         click.secho(f"Overwrite existing daemon file: {path}", fg='red')
