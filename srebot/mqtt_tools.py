@@ -43,7 +43,7 @@ def _get_mqtt_wrapper(client, module):
     return mqttwrapper(client, _name, _modulename)
 
 def _get_regular_client(name, scriptfile):
-    client = mqtt.Client(client_id=f"autobot-{name}-{scriptfile.name})", protocol=mqtt.MQTTv5)
+    client = mqtt.Client(client_id=f"srebot-{name}-{scriptfile.name})", protocol=mqtt.MQTTv5)
     return client
 
 def _connect_client(client):

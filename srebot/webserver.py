@@ -1,6 +1,8 @@
 import simplejson
 import http.server
 import json
+from pathlib import Path
+import sys
 
 class Handler(http.server.SimpleHTTPRequestHandler) :
     # A new Handler is created for every incommming request tho do_XYZ
@@ -18,7 +20,7 @@ class Handler(http.server.SimpleHTTPRequestHandler) :
             data = simplejson.loads(self.data_string)
 
             if self.path.startswith("/trigger/"):
-                with _onetime_client("_webtrigger") as client:
+                with _onetime_client("_webtrigger", Path(sys.argv[0])) as client:
                     data = json.dumps(data).encode('utf-8')
                     client.publish(self.path[1:], data, 2)
 

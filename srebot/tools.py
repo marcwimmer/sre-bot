@@ -127,14 +127,14 @@ def load_module(path):
     return foo
 
 @contextmanager
-def _onetime_client(name_appendix, timeout=10):
+def _onetime_client(name_appendix, script, timeout=10):
     from .mqtt_tools import _get_regular_client
     from .mqtt_tools import _connect_client
     data = {'stop': False}
     def on_publish(client, userdata, mid):
         data['stop'] = True
 
-    client = _get_regular_client(name_appendix=name_appendix)
+    client = _get_regular_client(name_appendix=name_appendix, scriptfile=script)
     client.on_publish = on_publish
     _connect_client(client)
     yield client
