@@ -7,7 +7,7 @@ import subprocess
 from importlib import import_module
 import importlib.util
 
-def _get_exe(config, name, path_to_sre):
+def _get_exe(config, path_to_sre):
     # get python environment and executable
     options = f" --config-file '{config.config_file}' daemon"
     if os.getenv("VIRTUAL_ENV"):
@@ -21,7 +21,7 @@ def install_systemd(name, path_to_sre):
     subprocess.call(["systemctl", "stop", name])
     import srebot
     template = (Path(srebot.__file__).parent / 'datafiles' / 'sre.service').read_text()
-    ExecStart = _get_exe(config, name, path_to_sre)
+    ExecStart = _get_exe(config, path_to_sre)
 
     template = template.replace('__exec_start__', ExecStart)
     template = template.replace('__name__', name)
@@ -34,7 +34,7 @@ def install_systemd(name, path_to_sre):
     subprocess.check_call(["/bin/systemctl", "restart", name])
     click.secho(f"Successfully installed with systemd: {name}", fg='green')
 
-def install_requirements():
+def install_requirements(path_to_sre):
     # rewrite using virtual env
     from . import global_data
     from .tools import iterate_scripts
@@ -43,7 +43,9 @@ def install_requirements():
     for script_path in iterate_scripts(config):
         req_file = script_path.parent / 'requirements.txt'
         if req_file.exists():
+            _get_exe(config, path_to_sre, 'pip')
             subprocess.check_call(["pip", "install", '-r', req_file])
         mod = load_module(script_path)
         if getattr(mod, 'install', None):
+            click.secho(f"Installing {mod.__file__}", fg='green')
             mod.install()

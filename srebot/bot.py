@@ -53,7 +53,7 @@ def make_install(config, name):
     from . install_services import install_requirements
     config = global_data['config']
 
-    install_requirements()
+    install_requirements(sys.argv[0])
     if not name.endswith('.service'):
         name = name + ".service"
     install_systemd(name, sys.argv[0])
@@ -151,7 +151,9 @@ def run(config, script, once):
     if not script:
         script = _get_robot_file(config, '')
     if not str(script).startswith('/'):
-        _raise_error("Needs absolute path if killing existing script")
+        script = Path(os.getcwd()) / script
+        if not script.exists():
+            _raise_error("Needs absolute path if killing existing script")
 
     #if kill_others:
     #    os.system(f"pkill -9 -f '{sys.executable}.*{sys.argv[0]}.*{script}'")
