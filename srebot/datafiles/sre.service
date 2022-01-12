@@ -2,7 +2,7 @@
 Description=SRE Bot __name__
 
 [Service]
-Restart=Always
+Restart=on-failure
 ExecStart=__exec_start__
 
 [Install]
