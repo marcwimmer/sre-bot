@@ -2,6 +2,7 @@
 Description=SRE Bot __name__
 
 [Service]
+Restart=Always
 ExecStart=__exec_start__
 
 [Install]
