@@ -180,6 +180,7 @@ def run(config, script, once):
     for scheduler in getattr(module, 'SCHEDULERS', []):
         if once:
             with _onetime_client('_run_once', script) as client:
+                os.environ["SRE_OUTPUT_MESSAGES"] = "1"
                 run_iter(config, client, scheduler, module, once=True)
             return
         else:
