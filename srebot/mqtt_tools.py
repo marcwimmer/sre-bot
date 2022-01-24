@@ -45,8 +45,9 @@ class mqttwrapper(object):
             value = json.dumps(value, indent=4)
         except: pass
 
+        click.secho("------------------------------------------------------------------------------------------------------", fg='blue')
         msg = f"{path}:\n{value}"
-        click.secho(str(value), fg='cyan')
+        click.secho(msg, fg='cyan')
 
 def _get_mqtt_wrapper(client, module):
     from . import global_data
