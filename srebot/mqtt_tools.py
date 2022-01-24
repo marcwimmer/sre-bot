@@ -30,7 +30,7 @@ class mqttwrapper(object):
             # in consecutive calls results starting from 1970
             'timestamp': str(arrow.get().to('utc')),
         }
-        self.output_to_console(value)
+        self.output_to_console(path, value)
         self.client.publish(
             path,
             payload=json.dumps(value),
@@ -38,13 +38,14 @@ class mqttwrapper(object):
             retain=retain
         )
 
-    def output_to_console(self, value):
+    def output_to_console(self, path, value):
         if os.getenv("SRE_OUTPUT_MESSAGES") != "1":
             return
         try:
             value = json.dumps(value, indent=4)
         except: pass
 
+        msg = f"{path}:\n{value}"
         click.secho(str(value), fg='cyan')
 
 def _get_mqtt_wrapper(client, module):
