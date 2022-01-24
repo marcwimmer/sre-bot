@@ -21,7 +21,7 @@ from setuptools.command.install import install
 setup_cfg = read_configuration("setup.cfg")
 metadata = setup_cfg['metadata']
 
-required_version = (61, 5, 0)
+required_version = (60, 5, 0)
 setuptools_version = tuple(map(int, setuptools.__version__.split(".")))
 if setuptools_version < required_version:
     raise Exception(f"Requires setup version {'.'.join(map(str, required_version))}")
