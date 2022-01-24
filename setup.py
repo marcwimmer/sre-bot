@@ -14,11 +14,17 @@ import subprocess
 from shutil import rmtree
 from pathlib import Path
 
+import setuptools
 from setuptools.config import read_configuration
 from setuptools import find_packages, setup, Command
 from setuptools.command.install import install
 setup_cfg = read_configuration("setup.cfg")
 metadata = setup_cfg['metadata']
+
+required_version = (61, 5, 0)
+setuptools_version = tuple(map(int, setuptools.__version__.split(".")))
+if setuptools_version < required_version:
+    raise Exception(f"Requires setup version {'.'.join(map(str, required_version))}")
 
 # HACK to ignore wheel building from pip and just to source distribution
 if 'bdist_wheel' in sys.argv:
