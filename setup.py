@@ -24,12 +24,15 @@ except ImportError as error:
     )
     sys.exit(1)
 
-from setuptools import setup
 from setuptools import find_packages, setup, Command
 from setuptools.command.install import install
+import configparser
 
-setup_cfg = setup("setup.cfg")
-metadata = setup_cfg["metadata"]
+config = configparser.ConfigParser()
+config.read("setup.cfg")
+
+setup_cfg = config.read("setup.cfg")
+metadata = config["metadata"]
 
 required_version = (60, 5, 0)
 setuptools_version = tuple(map(int, setuptools.__version__.split(".")))
