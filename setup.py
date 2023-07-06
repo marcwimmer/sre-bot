@@ -24,11 +24,11 @@ except ImportError as error:
     )
     sys.exit(1)
 
-from setuptools.config import pyprojecttoml
+from setuptools import setup
 from setuptools import find_packages, setup, Command
 from setuptools.command.install import install
 
-setup_cfg = pyprojecttoml("setup.cfg")
+setup_cfg = setup("setup.cfg")
 metadata = setup_cfg["metadata"]
 
 required_version = (60, 5, 0)
