@@ -13,7 +13,6 @@ import sys
 import subprocess
 from shutil import rmtree
 from pathlib import Path
-import wheel
 
 try:
     import setuptools
@@ -43,8 +42,8 @@ if setuptools_version < required_version:
     raise Exception(f"Requires setup version {'.'.join(map(str, required_version))}")
 
 # HACK to ignore wheel building from pip and just to source distribution
-if "bdist_wheel" in sys.argv:
-    sys.exit(0)
+#if "bdist_wheel" in sys.argv:
+#    sys.exit(0)
 
 NAME = metadata["name"]
 
