@@ -36,7 +36,7 @@ metadata = config["metadata"]
 
 required_version = (60, 5, 0)
 setuptools_version = tuple(map(int, setuptools.__version__.split(".")))
-#setuptools_version = (61, 0, 0)
+setuptools_version = (68, 0, 0)
 #print(setuptools_version)
 if setuptools_version < required_version:
     raise Exception(f"Requires setup version {'.'.join(map(str, required_version))}")
