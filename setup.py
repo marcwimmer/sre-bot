@@ -36,7 +36,7 @@ metadata = config["metadata"]
 
 required_version = (60, 5, 0)
 setuptools_version = tuple(map(int, setuptools.__version__.split(".")))
-setuptools_version = (61, 0, 0)
+#setuptools_version = (61, 0, 0)
 #print(setuptools_version)
 if setuptools_version < required_version:
     raise Exception(f"Requires setup version {'.'.join(map(str, required_version))}")
@@ -229,8 +229,8 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=[find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
-            "srebot",
-            "srebot.datafiles",
+            # "srebot",
+            # "srebot.datafiles",
     ],
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['srebot'],
