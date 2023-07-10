@@ -228,7 +228,10 @@ setup(
     version=about["__version__"],
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
+    packages=[find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
+            "srebot",
+            "srebot.datafiles",
+    ],
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['srebot'],
     package_data={
