@@ -13,11 +13,24 @@ python3.9 -m venv /var/lib/sre-bot
 . /var/lib/sre-bot/bin/activate
 pip install wheel setuptools==60.5.0
 pip install sre-bot
+```
 
 ### to install systemd service
 
 ```bash
 sre install
+```
+
+### Check state
+
+```bash
+journalctl -u sre
+```
+
+### Mosquitto required connection
+
+```
+Configure connection to existing mosquitto server.
 ```
 
 ### Completion for user root in bash
@@ -125,13 +138,32 @@ def on_message(client, msg, payload=None):
 ## Example: Setup Mosquitto for mqtt with docker
 
 ```yml
-version: '3'
+version: "3"
 services:
-  mosquitto:
-      image: eclipse-mosquitto:1.6
-      ports:
-        - 1883:1883
-      restart: unless-stopped
+    eclipse-mosquitto:
+        stdin_open: true
+        tty: true
+        restart: 'unless-stopped'
+        ports:
+            - 1883:1883
+            - 9001:9001
+        volumes:
+            - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+            - /mosquitto/data
+            - /mosquitto/log
+        image: eclipse-mosquitto
+        logging:
+          driver: "json-file"
+          options:
+            max-size: "50m"
+            max-file: "5"
+```
+
+and provide a mosquitto.conf
+
+```
+allow_anonymous true
+listener 1883
 ```
 
 ## install directly
