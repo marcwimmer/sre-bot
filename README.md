@@ -73,9 +73,11 @@ sre new test-bot
 ```python
 HOSTNAME = "my-virtual-host1"   # optional otherwise configured default host
 SCHEDULERS = ["*/10 * * * * *"] # optional - used when run is given up to seconds
+import random
 
 def run(client):
     # requires SCHEDULERS!
+    client.publish('house/bulb7', payload=random.choice([1,2,3,4,5,6]), qos=0)
     client.publish('house/bulb5', payload='off', qos=2)
 
 def on_message(client, msg, payload=None):
