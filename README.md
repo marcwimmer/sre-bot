@@ -25,8 +25,8 @@ Per default ubuntu deactivates ~/.bashrc bash-completion. Uncomment the lines pl
 ## First steps
 
 ```bash
-sre add-bot-path ./bots
-sre new test-bot.py
+(sudo) sre add-bot-path ./bots
+sre new test-bot
 ```
 
 ## /etc/sre/sre.conf
