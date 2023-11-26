@@ -11,7 +11,7 @@ Recommended way is to use a virtual-env like:
 # please use python3.9 or higher
 python3.9 -m venv /var/lib/sre-bot
 . /var/lib/sre-bot/bin/activate
-pip install wheel
+pip install wheel setuptools==60.5.0
 pip install sre-bot
 
 # to install systemd service
