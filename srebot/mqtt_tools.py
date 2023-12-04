@@ -27,8 +27,8 @@ class mqttwrapper(object):
         path = self.hostname + "/" + path
 
         def _get(keyname, default):
-            if isinstance(value, dict) and keyname in value:
-                return value[keyname]
+            if isinstance(payload, dict) and keyname in payload:
+                return payload[keyname]
             return default
 
         timestamp = _get("timestamp", str(arrow.get().to("utc")))
@@ -37,7 +37,7 @@ class mqttwrapper(object):
 
         value = {
             "module": self.modulename,
-            "value": _get("value", value),
+            "value": _get("value", payload),
             # cannot use msg.timestamp - they use time.monotonic() which results
             # in consecutive calls results starting from 1970
             "timestamp": _get("timestamp", timestamp),
