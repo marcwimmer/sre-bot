@@ -177,6 +177,8 @@ def run(config, script, once):
         else:
             break
 
+    if not hasattr(module, 'SCHEDULERS'):
+        config.logger.info(f"Module {module} has no schedulers configured. Which is ok, unless it is a typo.")
     for scheduler in getattr(module, 'SCHEDULERS', []):
         if once:
             with _onetime_client('_run_once', script) as client:
